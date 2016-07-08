@@ -24,3 +24,5 @@ out
 
 # Environment
 env*.properties
+buildinfo.properties
+project/build.properties

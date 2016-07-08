@@ -1,34 +1,21 @@
 package org.psesd.srx.shared.core.logging
 
-import org.psesd.srx.shared.core.{SrxMessage, SrxOperation, SrxOperationStatus, SrxRequest}
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException, ExceptionMessage}
 import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
+import org.psesd.srx.shared.core.{SrxMessage, SrxOperation, SrxOperationStatus, SrxRequest}
 import org.scalatest.FunSuite
 
 class LoggerTests extends FunSuite {
 
   test("null level string") {
-    val thrown = intercept[ArgumentNullException] {
-      Logger.log(null, "Test local log string.")
-    }
-    val expected = ExceptionMessage.NotNull.format("level parameter")
-    assert(thrown.getMessage.equals(expected))
+    Logger.log(null, "Test local log string.")
   }
 
   test("null message string") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      Logger.log(LogLevel.Local, "")
-    }
-    val expected = ExceptionMessage.NotNullOrEmptyOrWhitespace.format("message parameter")
-    assert(thrown.getMessage.equals(expected))
+    Logger.log(LogLevel.Local, "")
   }
 
   test("null level srxMessage") {
-    val thrown = intercept[ArgumentNullException] {
-      Logger.log(null, SrxMessage.getEmpty)
-    }
-    val expected = ExceptionMessage.NotNull.format("level parameter")
-    assert(thrown.getMessage.equals(expected))
+    Logger.log(null, SrxMessage.getEmpty)
   }
 
   test("log local string") {
@@ -64,7 +51,6 @@ class LoggerTests extends FunSuite {
     val sourceIp = "sourceIp"
     val userAgent = "userAgent"
     val srxRequest = new SrxRequest(0, null, null, null)
-    val srxRequestMessageId = srxRequest.messageId
     val srxMessage = SrxMessage(
       Option(messageId),
       timestamp,

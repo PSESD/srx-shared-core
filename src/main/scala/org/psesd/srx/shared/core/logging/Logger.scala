@@ -23,90 +23,100 @@ object Logger {
   private final val logger = getLogger
 
   def log(level: LogLevel, message: String): Unit = {
-    if (level == null) {
-      throw new ArgumentNullException("level parameter")
+    try {
+      if (level == null) {
+        throw new ArgumentNullException("level parameter")
+      }
+
+      if (message == null || message.isEmpty) {
+        throw new ArgumentNullOrEmptyOrWhitespaceException("message parameter")
+      }
+
+      val srxMessage = SrxMessage(
+        Option(SifMessageId()),
+        SifTimestamp(),
+        None,
+        None,
+        None,
+        None,
+        Option(message),
+        None,
+        None,
+        None,
+        None
+      )
+
+      log(level, srxMessage)
+    } catch {
+      case e: Exception =>
+        logger.error(e.getMessage)
     }
-
-    if (message == null || message.isEmpty) {
-      throw new ArgumentNullOrEmptyOrWhitespaceException("message parameter")
-    }
-
-    val srxMessage = SrxMessage(
-      Option(SifMessageId()),
-      SifTimestamp(),
-      None,
-      None,
-      None,
-      None,
-      Option(message),
-      None,
-      None,
-      None,
-      None
-    )
-
-    log(level, srxMessage)
   }
 
   def log(level: LogLevel, srxMessage: SrxMessage): Unit = {
-    if (level == null) {
-      throw new ArgumentNullException("level parameter")
-    }
+    try {
+      if (level == null) {
+        throw new ArgumentNullException("level parameter")
+      }
 
-    if (srxMessage == null) {
-      throw new ArgumentNullException("srxMessage parameter")
-    }
+      if (srxMessage == null) {
+        throw new ArgumentNullException("srxMessage parameter")
+      }
 
-    val description = srxMessage.description.orNull
-    if (description == null || description.isEmpty) {
-      throw new ArgumentNullOrEmptyOrWhitespaceException("srxMessage.description parameter")
-    }
+      val description = srxMessage.description.orNull
+      if (description == null || description.isEmpty) {
+        throw new ArgumentNullOrEmptyOrWhitespaceException("srxMessage.description parameter")
+      }
 
-    level match {
-      case Local =>
-        if (logLevel == LogLevel.Local) {
-          logger.debug(description)
-        }
+      level match {
+        case Local =>
+          if (logLevel == LogLevel.Local) {
+            logger.debug(description)
+          }
 
-      case Debug =>
-        if (logLevel == LogLevel.Debug) {
-          logger.debug(description)
-          sendToRollbar(logLevel, srxMessage)
-        }
+        case Debug =>
+          if (logLevel == LogLevel.Debug) {
+            logger.debug(description)
+            sendToRollbar(logLevel, srxMessage)
+          }
 
-      case Info =>
-        if (logLevel == LogLevel.Debug
-          || logLevel == LogLevel.Info) {
-          logger.info(description)
-          sendToRollbar(logLevel, srxMessage)
-        }
+        case Info =>
+          if (logLevel == LogLevel.Debug
+            || logLevel == LogLevel.Info) {
+            logger.info(description)
+            sendToRollbar(logLevel, srxMessage)
+          }
 
-      case Warning =>
-        if (logLevel == LogLevel.Debug
-          || logLevel == LogLevel.Info
-          || logLevel == LogLevel.Warning) {
-          logger.warn(description)
-          sendToRollbar(logLevel, srxMessage)
-        }
+        case Warning =>
+          if (logLevel == LogLevel.Debug
+            || logLevel == LogLevel.Info
+            || logLevel == LogLevel.Warning) {
+            logger.warn(description)
+            sendToRollbar(logLevel, srxMessage)
+          }
 
-      case Error =>
-        if (logLevel == LogLevel.Debug
-          || logLevel == LogLevel.Info
-          || logLevel == LogLevel.Warning
-          || logLevel == LogLevel.Error) {
-          logger.error(description)
-          sendToRollbar(logLevel, srxMessage)
-        }
+        case Error =>
+          if (logLevel == LogLevel.Debug
+            || logLevel == LogLevel.Info
+            || logLevel == LogLevel.Warning
+            || logLevel == LogLevel.Error) {
+            logger.error(description)
+            sendToRollbar(logLevel, srxMessage)
+          }
 
-      case Critical =>
-        if (logLevel == LogLevel.Debug
-          || logLevel == LogLevel.Info
-          || logLevel == LogLevel.Warning
-          || logLevel == LogLevel.Error
-          || logLevel == LogLevel.Critical) {
-          logger.error(description)
-          sendToRollbar(logLevel, srxMessage)
-        }
+        case Critical =>
+          if (logLevel == LogLevel.Debug
+            || logLevel == LogLevel.Info
+            || logLevel == LogLevel.Warning
+            || logLevel == LogLevel.Error
+            || logLevel == LogLevel.Critical) {
+            logger.error(description)
+            sendToRollbar(logLevel, srxMessage)
+          }
+      }
+    } catch {
+      case e: Exception =>
+        logger.error(e.getMessage)
     }
   }
 
@@ -122,7 +132,7 @@ object Logger {
         throw new RollbarNotFoundException()
 
       case _ =>
-        logger.error(ExceptionMessage.RollbarUnhandled.format(result.toString))
+        throw new RollbarUnhandledException(result)
     }
   }
 
