@@ -1,11 +1,12 @@
 package org.psesd.srx.shared.core.config
 
+import org.psesd.srx.shared.core.exceptions.EnvironmentException
 import org.scalatest.FunSuite
 
 class EnvironmentTests extends FunSuite {
 
   test("environment name is not empty") {
-    assert(!Environment.getProperty("ENVIRONMENT").isEmpty)
+    assert(!Environment.name.isEmpty)
   }
 
   test("environment default property") {
@@ -13,7 +14,7 @@ class EnvironmentTests extends FunSuite {
   }
 
   test("environment invalid property") {
-    val thrown = intercept[NullPointerException] {
+    val thrown = intercept[EnvironmentException] {
       Environment.getProperty("NOT_A_PROPERTY")
     }
     val expected = "Missing environment variable 'NOT_A_PROPERTY'."

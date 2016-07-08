@@ -8,8 +8,10 @@ package org.psesd.srx.shared.core.logging
   **/
 object LogLevel extends Enumeration {
   type LogLevel = Value
+  val Critical = Value("critical")
   val Debug = Value("debug")
   val Error = Value("error")
   val Info = Value("info")
+  val Local = Value("local")
   val Warning = Value("warning")
 }
