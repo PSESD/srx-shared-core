@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core.logging
 
 import org.psesd.srx.shared.core.SrxMessage
 import org.psesd.srx.shared.core.config.Environment
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException, RollbarNotFoundException, RollbarUnauthorizedException}
+import org.psesd.srx.shared.core.exceptions._
 import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
 
 /** Logging functions shared by SRX components and services.
@@ -113,6 +113,8 @@ object Logger {
   private def sendToRollbar(level: LogLevel, srxMessage: SrxMessage): Unit = {
     val result = RollbarClient.SendItem(new RollbarMessage(srxMessage, level).getJsonString())
     result match {
+      case 200 =>
+
       case 401 =>
         throw new RollbarUnauthorizedException()
 
@@ -120,6 +122,7 @@ object Logger {
         throw new RollbarNotFoundException()
 
       case _ =>
+        logger.error(ExceptionMessage.RollbarUnhandled.format(result.toString))
     }
   }
 

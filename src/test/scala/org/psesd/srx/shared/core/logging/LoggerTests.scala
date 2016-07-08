@@ -49,7 +49,7 @@ class LoggerTests extends FunSuite {
       None,
       None
     )
-    Logger.log(LogLevel.Info, message)
+    Logger.log(LogLevel.Local, message)
   }
 
   ignore("log debug message") {
