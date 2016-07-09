@@ -14,4 +14,10 @@ object TypeExtensions {
 
   }
 
+  implicit class ArrayExtensions[T](val a: Array[T]) {
+
+    def isNullOrEmpty: Boolean = Option(a).isEmpty || a.isEmpty
+
+  }
+
 }
