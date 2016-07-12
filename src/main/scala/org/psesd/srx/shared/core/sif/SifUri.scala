@@ -31,13 +31,11 @@ object SifUri {
 }
 
 class SifUri(sifUri: String) {
-
   if (sifUri.isNullOrEmpty) {
-    throw new ArgumentNullOrEmptyOrWhitespaceException("URI value")
+    throw new ArgumentNullOrEmptyOrWhitespaceException("sifUri parameter")
   }
-
   if (!SifUri.isValid(sifUri)) {
-    throw new ArgumentInvalidException("URI value")
+    throw new ArgumentInvalidException("sifUri parameter")
   }
 
   /** Holds the URI. **/

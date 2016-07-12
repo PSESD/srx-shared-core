@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullOrEmptyOrWhitespaceException}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullOrEmptyOrWhitespaceException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SifUriTests extends FunSuite {
@@ -17,34 +17,30 @@ class SifUriTests extends FunSuite {
 
   test("null uri") {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      val sifUri = SifUri(null)
+      SifUri(null)
     }
-    val expected = "The URI value cannot be null, empty, or whitespace."
-    assert(thrown.getMessage.equals(expected))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
   }
 
   test("empty uri") {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      val sifUri = SifUri("")
+      SifUri("")
     }
-    val expected = "The URI value cannot be null, empty, or whitespace."
-    assert(thrown.getMessage.equals(expected))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
   }
 
   test("whitespace uri") {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      val sifUri = SifUri(" ")
+      SifUri(" ")
     }
-    val expected = "The URI value cannot be null, empty, or whitespace."
-    assert(thrown.getMessage.equals(expected))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
   }
 
   test("invalid uri") {
     val thrown = intercept[ArgumentInvalidException] {
-      val sifUri = SifUri("not_a_valid_uri")
+      SifUri("not_a_valid_uri")
     }
-    val expected = "The URI value is invalid."
-    assert(thrown.getMessage.equals(expected))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri parameter")))
   }
 
 }

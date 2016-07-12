@@ -2,6 +2,7 @@ package org.psesd.srx.shared.core.sif
 
 import org.joda.time.format.ISODateTimeFormat
 import org.joda.time.{DateTime, DateTimeZone}
+import org.psesd.srx.shared.core.exceptions.ArgumentInvalidException
 
 /** Represents a SIF-compliant Date/Time value.
   *
@@ -21,7 +22,11 @@ object SifTimestamp {
   def apply(dateTime: String): SifTimestamp = new SifTimestamp(getDateTime(dateTime))
 
   private def getDateTime(dateTime: String) = {
-    ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
+    if (isValid(dateTime)) {
+      ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
+    } else {
+      throw new ArgumentInvalidException("dateTime parameter")
+    }
   }
 
   def isValid(dateTime: String): Boolean = {

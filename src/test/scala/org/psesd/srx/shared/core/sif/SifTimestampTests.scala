@@ -2,6 +2,7 @@ package org.psesd.srx.shared.core.sif
 
 import org.joda.time.DateTimeZone
 import org.joda.time.format.ISODateTimeFormat
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SifTimestampTests extends FunSuite {
@@ -26,6 +27,13 @@ class SifTimestampTests extends FunSuite {
     val expected = "2016-01-01T18:00:00.000Z"
     val actual = timestamp.toString
     assert(actual.equals(expected))
+  }
+
+  test("invalid timestamp") {
+    val thrown = intercept[ArgumentInvalidException] {
+      SifTimestamp("1234")
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("dateTime parameter")))
   }
 
 }
