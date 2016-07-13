@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core.logging
 
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder, HttpClients}
+import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.psesd.srx.shared.core.config.Environment
 
 /** Handles interactions with the Rollbar API.

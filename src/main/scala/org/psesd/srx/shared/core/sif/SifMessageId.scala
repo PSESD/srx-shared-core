@@ -2,6 +2,8 @@ package org.psesd.srx.shared.core.sif
 
 import java.util.UUID
 
+import org.psesd.srx.shared.core.exceptions.ArgumentInvalidException
+
 /** Represents a SIF-compliant MessageId value.
   *
   * @version 1.0
@@ -19,6 +21,9 @@ object SifMessageId {
   def apply(id: String): SifMessageId = new SifMessageId(getMessageId(id))
 
   private def getMessageId(id: String) = {
+    if(!isValid(id)) {
+      throw new ArgumentInvalidException("id parameter value '%s'".format(id))
+    }
     UUID.fromString(id)
   }
 
@@ -27,7 +32,7 @@ object SifMessageId {
       false
     } else {
       try {
-        val check = UUID.fromString(id)
+        UUID.fromString(id)
         true
       } catch {
         case _: Throwable => false

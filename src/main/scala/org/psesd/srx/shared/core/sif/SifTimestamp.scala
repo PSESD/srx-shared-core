@@ -22,11 +22,10 @@ object SifTimestamp {
   def apply(dateTime: String): SifTimestamp = new SifTimestamp(getDateTime(dateTime))
 
   private def getDateTime(dateTime: String) = {
-    if (isValid(dateTime)) {
-      ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
-    } else {
-      throw new ArgumentInvalidException("dateTime parameter")
+    if (!isValid(dateTime)) {
+      throw new ArgumentInvalidException("dateTime parameter value '%s'".format(dateTime))
     }
+    ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
   }
 
   def isValid(dateTime: String): Boolean = {
@@ -34,7 +33,7 @@ object SifTimestamp {
       false
     } else {
       try {
-        val check = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
+        ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).parseDateTime(dateTime)
         true
       } catch {
         case _: Throwable => false

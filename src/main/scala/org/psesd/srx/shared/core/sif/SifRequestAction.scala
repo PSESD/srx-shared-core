@@ -1,0 +1,33 @@
+package org.psesd.srx.shared.core.sif
+
+import org.psesd.srx.shared.core.sif.SifHttpRequestMethod.SifHttpRequestMethod
+
+/** Enumeration of SIF requestAction header values.
+  *
+  * @version 1.0
+  * @since 1.0
+  * @author Stephen Pugmire (iTrellis, LLC)
+  **/
+object SifRequestAction extends Enumeration {
+  type SifRequestAction = Value
+  val Create = Value("CREATE")
+  val Delete = Value("DELETE")
+  val Query = Value("QUERY")
+  val Update = Value("UPDATE")
+
+  def fromHttpMethod(method: SifHttpRequestMethod): SifRequestAction = {
+    method match {
+      case SifHttpRequestMethod.Delete =>
+        Delete
+
+      case SifHttpRequestMethod.Get =>
+        Query
+
+      case SifHttpRequestMethod.Post =>
+        Create
+
+      case SifHttpRequestMethod.Put =>
+        Update
+    }
+  }
+}

@@ -33,7 +33,17 @@ class SifTimestampTests extends FunSuite {
     val thrown = intercept[ArgumentInvalidException] {
       SifTimestamp("1234")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("dateTime parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("dateTime parameter value '1234'")))
+  }
+
+  test("timestamp isValid true") {
+    val value = "2016-01-01T18:00:00.000Z"
+    assert(SifTimestamp.isValid(value))
+  }
+
+  test("timestamp isValid false") {
+    val value = "abcd"
+    assert(!SifTimestamp.isValid(value))
   }
 
 }

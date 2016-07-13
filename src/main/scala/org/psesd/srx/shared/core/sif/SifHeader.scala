@@ -8,6 +8,7 @@ package org.psesd.srx.shared.core.sif
   **/
 object SifHeader extends Enumeration {
   type SifHeader = Value
+  val Accept = Value("accept")
   val Authorization = Value("authorization")
   val GeneratorId = Value("generatorId")
   val MessageId = Value("messageId")

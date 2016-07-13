@@ -78,7 +78,7 @@ class SifAuthenticatorTests extends FunSuite {
     val thrown = intercept[ArgumentInvalidException] {
       authenticator.validateRequestAuthorization(SifTestValues.sifAuthorizationShaHmac256, "1234")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("dateTime parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("dateTime parameter value '1234'")))
   }
 
   test("validate request authorization invalid authorization value") {
