@@ -5,15 +5,12 @@ import org.scalatest.FunSuite
 
 class SifRequestTests extends FunSuite {
 
-  val authorization = new SifAuthorization(SifTestValues.sifProvider, SifTestValues.timestamp, SifAuthenticationMethod.SifHmacSha256)
-  val timestamp = SifTimestamp()
-
   test("default request") {
-    val sifRequest = new SifRequest(authorization, timestamp)
+    val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifTestValues.timestamp)
 
     // constructor
-    assert(sifRequest.authorization.toString.equals(authorization.toString))
-    assert(sifRequest.timestamp.toString.equals(timestamp.toString))
+    assert(sifRequest.authorization.toString.equals(SifTestValues.authorization.toString))
+    assert(sifRequest.timestamp.toString.equals(SifTestValues.timestamp.toString))
 
     // base class
     assert(sifRequest.requestId.isEmpty)
@@ -38,7 +35,7 @@ class SifRequestTests extends FunSuite {
     val messageType = SifMessageType.Event
     val requestAction = SifRequestAction.Update
     val requestType = SifRequestType.Delayed
-    val sifRequest = new SifRequest(authorization, timestamp)
+    val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifTestValues.timestamp)
     sifRequest.requestId = Option(requestId)
     sifRequest.serviceType = Option(serviceType)
     sifRequest.accept = Option(accept)
@@ -49,8 +46,8 @@ class SifRequestTests extends FunSuite {
     sifRequest.requestType = Option(requestType)
 
     // constructor
-    assert(sifRequest.authorization.toString.equals(authorization.toString))
-    assert(sifRequest.timestamp.toString.equals(timestamp.toString))
+    assert(sifRequest.authorization.toString.equals(SifTestValues.authorization.toString))
+    assert(sifRequest.timestamp.toString.equals(SifTestValues.timestamp.toString))
 
     // base class
     assert(sifRequest.requestId.orNull.equals(requestId))
@@ -65,18 +62,18 @@ class SifRequestTests extends FunSuite {
     assert(sifRequest.requestType.orNull.equals(requestType))
   }
 
-  test("null authorization") {
+  test("null provider") {
     val thrown = intercept[ArgumentNullException] {
-      new SifRequest(null, timestamp)
+      new SifRequest(null, "")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("authorization parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("provider parameter")))
   }
 
-  test("null timestamp") {
+  test("null resourceUri") {
     val thrown = intercept[ArgumentNullException] {
-      new SifRequest(authorization, null)
+      new SifRequest(SifTestValues.sifProvider, null)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("timestamp parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("resourceUri parameter")))
   }
 
 }

@@ -12,4 +12,6 @@ object SifMessageType extends Enumeration {
   val Event = Value("EVENT")
   val Request = Value("REQUEST")
   val Response = Value("RESPONSE")
+
+  def withNameCaseInsensitive(s: String): Value = values.find(_.toString.toLowerCase == s.toLowerCase).orNull
 }

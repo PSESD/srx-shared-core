@@ -1,22 +1,28 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullOrEmptyOrWhitespaceException}
-import org.psesd.srx.shared.core.extensions.TypeExtensions._
+import org.psesd.srx.shared.core.exceptions.ArgumentNullException
+import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMethod
 
 /** Represents an authorized SIF provider.
   *
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
-class SifProvider(val sessionToken: String, val sharedSecret: String) {
-  if (sessionToken.isNullOrEmpty) {
-    throw new ArgumentNullOrEmptyOrWhitespaceException("sessionToken parameter")
+  * */
+class SifProvider(val baseUri: SifUri,
+                  val sessionToken: SifProviderSessionToken,
+                  val sharedSecret: SifProviderSharedSecret,
+                  val authenticationMethod: SifAuthenticationMethod) {
+  if (baseUri == null) {
+    throw new ArgumentNullException("baseUri parameter")
   }
-  if (!sessionToken.isUuid) {
-    throw new ArgumentInvalidException("sessionToken parameter")
+  if (sessionToken == null) {
+    throw new ArgumentNullException("sessionToken parameter")
   }
-  if (sharedSecret.isNullOrEmpty) {
-    throw new ArgumentNullOrEmptyOrWhitespaceException("sharedSecret parameter")
+  if (sharedSecret == null) {
+    throw new ArgumentNullException("sharedSecret parameter")
+  }
+  if (authenticationMethod == null) {
+    throw new ArgumentNullException("authenticationMethod parameter")
   }
 }

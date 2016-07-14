@@ -33,6 +33,22 @@ object TypeExtensions {
       }
     }
 
+    def trimPrecedingSlash: String = {
+      if(s.startsWith("/")) {
+        s.stripPrefix("/")
+      } else {
+        s
+      }
+    }
+
+    def trimTrailingSlash: String = {
+      if(s.endsWith("/")) {
+        s.stripSuffix("/")
+      } else {
+        s
+      }
+    }
+
   }
 
 }

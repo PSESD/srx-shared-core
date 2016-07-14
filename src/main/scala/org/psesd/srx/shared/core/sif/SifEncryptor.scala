@@ -114,7 +114,7 @@ object SifEncryptor {
       throw new ArgumentNullException("timestamp parameter")
     }
 
-    encodeBasic(provider.sessionToken.trim + ":" + timestamp.toString.trim)
+    encodeBasic(provider.sessionToken.toString.trim + ":" + timestamp.toString.trim)
   }
 
   def getSifAuthorizationHmacSha256Hash(provider: SifProvider, timestamp: SifTimestamp): String = {
@@ -125,11 +125,11 @@ object SifEncryptor {
       throw new ArgumentNullException("timestamp parameter")
     }
 
-    val plaintext = (provider.sessionToken.trim + ":" + timestamp.toString.trim).getBytes
+    val plaintext = (provider.sessionToken.toString.trim + ":" + timestamp.toString.trim).getBytes
 
     val spec = "HmacSHA256"
     val mac = Mac.getInstance(spec)
-    val secretKey = new SecretKeySpec(provider.sharedSecret.getBytes, spec)
+    val secretKey = new SecretKeySpec(provider.sharedSecret.toString.getBytes, spec)
     mac.init(secretKey)
 
     Base64.encodeBase64String(mac.doFinal(plaintext))

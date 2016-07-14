@@ -10,13 +10,21 @@ import scala.collection.concurrent.TrieMap
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 class SifMessage(val timestamp: SifTimestamp) {
   if (timestamp == null) {
     throw new ArgumentNullException("timestamp parameter")
   }
-  val headers = new TrieMap[String, String]
+
+  protected val headers = new TrieMap[String, String]
+
   var body: Option[String] = None
   var requestId: Option[String] = None
   var serviceType: Option[SifServiceType] = Option(SifServiceType.Object)
+
+  def addHeader(key: String, value: String): Unit = {
+    if (key != null && !key.isEmpty && value != null && !value.isEmpty) {
+      headers.putIfAbsent(key, value)
+    }
+  }
 }

@@ -7,7 +7,7 @@ class SrxMessageTests extends FunSuite {
 
   test("empty message") {
     val message = SrxMessage.getEmpty
-    assert(message.messageId.getOrElse(SifMessageId()).toString.equals("00000000-0000-0000-0000-000000000000"))
+    assert(message.messageId.getOrElse(SifMessageId()).toString.length.equals(36))
     assert(message.timestamp.toString.length > 0)
     assert(message.operation.getOrElse("").equals(""))
     assert(message.status.getOrElse("").equals(""))

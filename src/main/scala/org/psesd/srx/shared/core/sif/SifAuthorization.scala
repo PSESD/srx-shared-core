@@ -1,7 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, SifAuthenticationMethodInvalidException}
-import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMethod
 
 /** Represents a SIF authorization value.
   *
@@ -9,15 +8,12 @@ import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMe
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-class SifAuthorization(val provider: SifProvider, val timestamp: SifTimestamp, val method: SifAuthenticationMethod) {
+class SifAuthorization(val provider: SifProvider, val timestamp: SifTimestamp) {
   if (provider == null) {
     throw new ArgumentNullException("provider parameter")
   }
   if (timestamp == null) {
     throw new ArgumentNullException("timestamp parameter")
-  }
-  if (method == null) {
-    throw new ArgumentNullException("method parameter")
   }
 
   val authorizationValue: String = {
@@ -28,7 +24,7 @@ class SifAuthorization(val provider: SifProvider, val timestamp: SifTimestamp, v
 
     var sifAuthorizationHash: String = ""
 
-    method match {
+    provider.authenticationMethod match {
       case SifAuthenticationMethod.Basic =>
         sifAuthorizationHash = SifEncryptor.getSifAuthorizationBasicHash(provider, timestamp)
 
@@ -36,11 +32,11 @@ class SifAuthorization(val provider: SifProvider, val timestamp: SifTimestamp, v
         sifAuthorizationHash = SifEncryptor.getSifAuthorizationHmacSha256Hash(provider, timestamp)
 
       case _ =>
-        throw new SifAuthenticationMethodInvalidException(method.toString)
+        throw new SifAuthenticationMethodInvalidException(provider.authenticationMethod.toString)
     }
 
     val combined = provider.sessionToken + ":" + sifAuthorizationHash
-    method.toString + " " + SifEncryptor.encodeBasic(combined)
+    provider.authenticationMethod.toString + " " + SifEncryptor.encodeBasic(combined)
   }
 
   override def toString: String = {

@@ -3,12 +3,14 @@ package org.psesd.srx.shared.core.sif
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 import org.psesd.srx.shared.core.sif.SifMessageType.SifMessageType
 
+import scala.collection.concurrent.TrieMap
+
 /** Represents a SIF response.
   *
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 class SifResponse(timestamp: SifTimestamp,
                   val messageId: SifMessageId,
                   val messageType: SifMessageType,
@@ -27,4 +29,15 @@ class SifResponse(timestamp: SifTimestamp,
   }
 
   val responseAction = sifRequest.requestAction.orElse(None)
+  var statusCode: Int = 0
+
+  def getHeaders: TrieMap[String, String] = {
+    addHeader(SifHeader.MessageId.toString, messageId.toString)
+    addHeader(SifHeader.MessageType.toString, messageType.toString)
+    addHeader(SifHeader.ResponseAction.toString, responseAction.getOrElse("").toString)
+    addHeader(SifHeader.RequestId.toString, requestId.getOrElse(""))
+    addHeader(SifHeader.ServiceType.toString, serviceType.getOrElse("").toString)
+    addHeader(SifHeader.Timestamp.toString, timestamp.toString)
+    headers
+  }
 }

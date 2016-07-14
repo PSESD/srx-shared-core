@@ -74,7 +74,7 @@ class SifAuthenticator(providers: List[SifProvider], methods: List[SifAuthentica
   }
 
   private def getValidProvider(sessionToken: String): SifProvider = {
-    providers.find(p => p.sessionToken.equals(sessionToken)).orNull
+    providers.find(p => p.sessionToken.toString.equals(sessionToken)).orNull
   }
 
   private def validateAuthorizationEncoding(authorization: String): Boolean = {

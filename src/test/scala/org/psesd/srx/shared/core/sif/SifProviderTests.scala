@@ -1,63 +1,42 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullOrEmptyOrWhitespaceException, ExceptionMessage}
+import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SifProviderTests extends FunSuite {
 
   test("valid provider") {
-    val sifProvider = new SifProvider(SifTestValues.sessionToken, SifTestValues.sharedSecret)
+    val sifProvider = new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifTestValues.sifAuthenticationMethod)
     assert(sifProvider.sessionToken.equals(SifTestValues.sessionToken))
     assert(sifProvider.sharedSecret.equals(SifTestValues.sharedSecret))
   }
 
+  test("null baseUri") {
+    val thrown = intercept[ArgumentNullException] {
+      new SifProvider(null, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifTestValues.sifAuthenticationMethod)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("baseUri parameter")))
+  }
+
   test("null sessionToken") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider(null, SifTestValues.sharedSecret)
+    val thrown = intercept[ArgumentNullException] {
+      new SifProvider(SifTestValues.sifUri, null, SifTestValues.sharedSecret, SifTestValues.sifAuthenticationMethod)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sessionToken parameter")))
-  }
-
-  test("empty sessionToken") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider("", SifTestValues.sharedSecret)
-    }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sessionToken parameter")))
-  }
-
-  test("whitespace sessionToken") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider(" ", SifTestValues.sharedSecret)
-    }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sessionToken parameter")))
-  }
-
-  test("invalid sessionToken") {
-    val thrown = intercept[ArgumentInvalidException] {
-      new SifProvider("123", SifTestValues.sharedSecret)
-    }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sessionToken parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("sessionToken parameter")))
   }
 
   test("null sharedSecret") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider(SifTestValues.sessionToken, null)
+    val thrown = intercept[ArgumentNullException] {
+      new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, null, SifTestValues.sifAuthenticationMethod)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sharedSecret parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("sharedSecret parameter")))
   }
 
-  test("empty sharedSecret") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider(SifTestValues.sessionToken, "")
+  test("null authenticationMethod") {
+    val thrown = intercept[ArgumentNullException] {
+      new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, SifTestValues.sharedSecret, null)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sharedSecret parameter")))
-  }
-
-  test("whitespace sharedSecret") {
-    val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-      new SifProvider(SifTestValues.sessionToken, " ")
-    }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sharedSecret parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("authenticationMethod parameter")))
   }
 
 }

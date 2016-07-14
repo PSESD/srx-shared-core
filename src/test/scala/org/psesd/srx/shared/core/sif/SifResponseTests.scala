@@ -5,13 +5,12 @@ import org.scalatest.FunSuite
 
 class SifResponseTests extends FunSuite {
 
-  val authorization = new SifAuthorization(SifTestValues.sifProvider, SifTestValues.timestamp, SifAuthenticationMethod.SifHmacSha256)
   val timestamp = SifTimestamp()
   val messageId = SifMessageId("ad53dbf6-e0a0-469f-8428-c17738eba43e")
   val messageType = SifMessageType.Response
+  val sifRequest = new SifRequest(SifTestValues.sifProvider, "", timestamp)
 
   test("default response") {
-    val sifRequest = new SifRequest(authorization, timestamp)
     val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
 
     // constructor
@@ -32,7 +31,6 @@ class SifResponseTests extends FunSuite {
   test("fully constructed response") {
     val requestId = "1234"
     val serviceType = SifServiceType.Functional
-    val sifRequest = new SifRequest(authorization, timestamp)
     sifRequest.requestAction = Option(SifRequestAction.Update)
     val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
     sifResponse.requestId = Option(requestId)
@@ -53,7 +51,6 @@ class SifResponseTests extends FunSuite {
   }
 
   test("null timestamp") {
-    val sifRequest = new SifRequest(authorization, timestamp)
     val thrown = intercept[ArgumentNullException] {
       new SifResponse(null, messageId, messageType, sifRequest)
     }
@@ -61,7 +58,6 @@ class SifResponseTests extends FunSuite {
   }
 
   test("null messageId") {
-    val sifRequest = new SifRequest(authorization, timestamp)
     val thrown = intercept[ArgumentNullException] {
       new SifResponse(timestamp, null, messageType, sifRequest)
     }
@@ -69,7 +65,6 @@ class SifResponseTests extends FunSuite {
   }
 
   test("null messageType") {
-    val sifRequest = new SifRequest(authorization, timestamp)
     val thrown = intercept[ArgumentNullException] {
       new SifResponse(timestamp, messageId, null, sifRequest)
     }

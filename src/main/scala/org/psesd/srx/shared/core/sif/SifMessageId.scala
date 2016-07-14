@@ -17,7 +17,7 @@ case class SifMessageId(id: UUID) {
 }
 
 object SifMessageId {
-  def apply(): SifMessageId = new SifMessageId(new UUID(0, 0))
+  def apply(): SifMessageId = new SifMessageId(UUID.randomUUID)
   def apply(id: String): SifMessageId = new SifMessageId(getMessageId(id))
 
   private def getMessageId(id: String) = {

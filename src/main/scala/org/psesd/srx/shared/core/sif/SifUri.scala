@@ -38,6 +38,10 @@ class SifUri(sifUri: String) {
     throw new ArgumentInvalidException("sifUri parameter")
   }
 
+  override def toString: String = {
+    uri.toString
+  }
+
   /** Holds the URI. **/
   private val uri = URI.create(sifUri)
 
