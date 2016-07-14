@@ -164,4 +164,11 @@ class SifEncryptorTests extends FunSuite {
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("timestamp parameter")))
   }
 
+  test("encodeBasic + decodeBasic") {
+    val original = "test:encode+decode"
+    val encoded = SifEncryptor.encodeBasic(original)
+    val decoded = SifEncryptor.decodeBasic(encoded)
+    assert(decoded.equals(original))
+  }
+
 }

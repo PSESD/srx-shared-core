@@ -6,6 +6,6 @@ package org.psesd.srx.shared.core.exceptions
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-class RollbarNotFoundException() extends IllegalArgumentException(
+class RollbarNotFoundException() extends Exception(
   ExceptionMessage.RollbarNotFound
 )

@@ -142,6 +142,6 @@ object Logger {
   }
 
   private def getLogLevel: LogLevel = {
-    LogLevel.withName(Environment.getProperty(LogLevelKey))
+    LogLevel.withNameCaseInsensitive(Environment.getProperty(LogLevelKey))
   }
 }

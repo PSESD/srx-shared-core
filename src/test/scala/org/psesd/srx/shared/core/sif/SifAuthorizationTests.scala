@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class SifAuthorizationTests extends FunSuite {
 
   test("create request authorization Basic") {
-    val provider = new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
+    val provider = new SifProvider(SifTestValues.sifUrl, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
     val result = new SifAuthorization(provider, SifTestValues.timestamp).toString
     val expected = SifTestValues.sifAuthorizationBasic
     assert(result.toString.equals(expected))

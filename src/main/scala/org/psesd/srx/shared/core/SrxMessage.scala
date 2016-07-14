@@ -46,8 +46,8 @@ object SrxMessage {
 
     new SrxMessage(Option(SifMessageId(mapping("messageid"))),
       SifTimestamp(mapping("timestamp")),
-      Option(SrxOperation.withName(mapping("operation"))),
-      Option(SrxOperationStatus.withName(mapping("status"))),
+      Option(SrxOperation.withNameCaseInsensitive(mapping("operation"))),
+      Option(SrxOperationStatus.withNameCaseInsensitive(mapping("status"))),
       Option(mapping("source")),
       Option(mapping("destination")),
       Option(mapping("description")),

@@ -6,6 +6,6 @@ package org.psesd.srx.shared.core.exceptions
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-class SifProviderNotAuthorizedException(val sessionToken: String) extends IllegalArgumentException(
+class SifProviderNotAuthorizedException(val sessionToken: String) extends SecurityException(
   ExceptionMessage.SifProviderNotAuthorized.format(sessionToken)
 )

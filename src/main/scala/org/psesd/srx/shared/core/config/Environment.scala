@@ -14,6 +14,10 @@ object Environment {
   final val Development = "development"
   final val Local = "local"
 
+  final val EnvironmentProviderSessionTokenKey = "ENVIRONMENT_PROVIDER_SESSION_TOKEN"
+  final val EnvironmentProviderSharedSecretKey = "ENVIRONMENT_PROVIDER_SHARED_SECRET"
+  final val EnvironmentProviderUrlKey = "ENVIRONMENT_PROVIDER_URL"
+
   private final val EnvironmentKey = "ENVIRONMENT"
   private final val LocalEnvironmentFileName = "env-local.properties"
 

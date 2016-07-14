@@ -22,8 +22,8 @@ object SifTestValues {
 
   lazy val sessionToken = SifProviderSessionToken("ad53dbf6-e0a0-469f-8428-c17738eba43e")
   lazy val sharedSecret = SifProviderSharedSecret("pHkAuxdGGMWS")
-  lazy val sifUri: SifUri = SifUri("https://psesd.hostedzone.com/svcs/dev/requestProvider")
-  lazy val sifProvider = new SifProvider(sifUri, sessionToken, sharedSecret, sifAuthenticationMethod)
+  lazy val sifUrl: SifProviderUrl = SifProviderUrl("https://psesd.hostedzone.com/svcs/dev/requestProvider")
+  lazy val sifProvider = new SifProvider(sifUrl, sessionToken, sharedSecret, sifAuthenticationMethod)
   lazy val sifProviders = List[SifProvider](sifProvider)
   lazy val timestamp: SifTimestamp = SifTimestamp("2015-02-24T20:51:59.878Z")
   lazy val authorization = new SifAuthorization(sifProvider, timestamp)

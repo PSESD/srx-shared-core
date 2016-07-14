@@ -6,6 +6,6 @@ package org.psesd.srx.shared.core.exceptions
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-class RollbarUnhandledException(statusCode: Int) extends IllegalArgumentException(
+class RollbarUnhandledException(statusCode: Int) extends Exception(
   ExceptionMessage.RollbarUnhandled.format(statusCode.toString)
 )

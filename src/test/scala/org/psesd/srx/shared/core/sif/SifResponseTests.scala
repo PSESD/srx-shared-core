@@ -8,7 +8,7 @@ class SifResponseTests extends FunSuite {
   val timestamp = SifTimestamp()
   val messageId = SifMessageId("ad53dbf6-e0a0-469f-8428-c17738eba43e")
   val messageType = SifMessageType.Response
-  val sifRequest = new SifRequest(SifTestValues.sifProvider, "", timestamp)
+  val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifZone(), SifContext(), timestamp)
 
   test("default response") {
     val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)

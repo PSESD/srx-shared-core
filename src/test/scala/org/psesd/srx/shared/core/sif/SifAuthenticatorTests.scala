@@ -39,7 +39,7 @@ class SifAuthenticatorTests extends FunSuite {
   }
 
   test("validate request authorization Basic") {
-    val sifProvider = new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
+    val sifProvider = new SifProvider(SifTestValues.sifUrl, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
     val authenticator = new SifAuthenticator(List[SifProvider](sifProvider), List[SifAuthenticationMethod](SifAuthenticationMethod.Basic))
     val result = authenticator.validateRequestAuthorization(SifTestValues.sifAuthorizationBasic, SifTestValues.timestamp.toString)
     val expected = true
@@ -91,7 +91,7 @@ class SifAuthenticatorTests extends FunSuite {
   }
 
   test("validate request authorization method not supported") {
-    val provider = new SifProvider(SifTestValues.sifUri, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
+    val provider = new SifProvider(SifTestValues.sifUrl, SifTestValues.sessionToken, SifTestValues.sharedSecret, SifAuthenticationMethod.Basic)
     val authenticator = new SifAuthenticator(SifTestValues.sifProviders, SifTestValues.sifAuthenticationMethods)
     val authorization = new SifAuthorization(provider, SifTestValues.timestamp)
     val thrown = intercept[SifAuthenticationMethodInvalidException] {
@@ -103,7 +103,7 @@ class SifAuthenticatorTests extends FunSuite {
   test("validate request authorization provider not authorized") {
     val invalidSessionToken = SifProviderSessionToken("23832cf1-a1cb-41e3-b358-1f9cbb9646c6")
     val authenticator = new SifAuthenticator(SifTestValues.sifProviders, SifTestValues.sifAuthenticationMethods)
-    val authorization = new SifAuthorization(new SifProvider(SifTestValues.sifUri, invalidSessionToken, SifTestValues.sharedSecret, SifTestValues.sifAuthenticationMethod), SifTestValues.timestamp)
+    val authorization = new SifAuthorization(new SifProvider(SifTestValues.sifUrl, invalidSessionToken, SifTestValues.sharedSecret, SifTestValues.sifAuthenticationMethod), SifTestValues.timestamp)
     val thrown = intercept[SifProviderNotAuthorizedException] {
       authenticator.validateRequestAuthorization(authorization.toString, SifTestValues.timestamp.toString)
     }

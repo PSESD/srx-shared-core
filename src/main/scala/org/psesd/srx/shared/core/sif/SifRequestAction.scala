@@ -1,5 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
+import org.psesd.srx.shared.core.extensions.ExtendedEnumeration
 import org.psesd.srx.shared.core.sif.SifHttpRequestMethod.SifHttpRequestMethod
 
 /** Enumeration of SIF requestAction header values.
@@ -8,7 +9,7 @@ import org.psesd.srx.shared.core.sif.SifHttpRequestMethod.SifHttpRequestMethod
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-object SifRequestAction extends Enumeration {
+object SifRequestAction extends ExtendedEnumeration {
   type SifRequestAction = Value
   val Create = Value("CREATE")
   val Delete = Value("DELETE")

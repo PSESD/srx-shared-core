@@ -6,6 +6,6 @@ package org.psesd.srx.shared.core.exceptions
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-class SifAuthenticationMethodInvalidException(val method: String) extends IllegalArgumentException(
+class SifAuthenticationMethodInvalidException(val method: String) extends SecurityException(
   ExceptionMessage.SifAuthenticationMethodInvalid.format(method)
 )

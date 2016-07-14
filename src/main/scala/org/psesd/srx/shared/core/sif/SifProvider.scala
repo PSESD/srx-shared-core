@@ -8,13 +8,13 @@ import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMe
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
-class SifProvider(val baseUri: SifUri,
+  **/
+class SifProvider(val url: SifProviderUrl,
                   val sessionToken: SifProviderSessionToken,
                   val sharedSecret: SifProviderSharedSecret,
                   val authenticationMethod: SifAuthenticationMethod) {
-  if (baseUri == null) {
-    throw new ArgumentNullException("baseUri parameter")
+  if (url == null) {
+    throw new ArgumentNullException("url parameter")
   }
   if (sessionToken == null) {
     throw new ArgumentNullException("sessionToken parameter")

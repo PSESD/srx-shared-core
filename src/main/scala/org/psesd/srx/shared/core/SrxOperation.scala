@@ -1,12 +1,14 @@
 package org.psesd.srx.shared.core
 
+import org.psesd.srx.shared.core.extensions.ExtendedEnumeration
+
 /** Enumeration of supported SRX operations.
   *
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
   **/
-object SrxOperation extends Enumeration {
+object SrxOperation extends ExtendedEnumeration {
   type SrxOperation = Value
   val Diagnostic = Value("Diagnostic")
   val DiagnosticEnvironment = Value("DiagnosticEnvironment")

@@ -32,6 +32,7 @@ class SifResponse(timestamp: SifTimestamp,
   var statusCode: Int = 0
 
   def getHeaders: TrieMap[String, String] = {
+    addHeader(SifHttpHeader.ContentType.toString, contentType.getOrElse("").toString)
     addHeader(SifHeader.MessageId.toString, messageId.toString)
     addHeader(SifHeader.MessageType.toString, messageType.toString)
     addHeader(SifHeader.ResponseAction.toString, responseAction.getOrElse("").toString)
