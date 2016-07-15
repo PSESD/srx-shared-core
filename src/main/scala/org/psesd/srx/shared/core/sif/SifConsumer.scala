@@ -10,6 +10,7 @@ import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifMessageType.SifMessageType
 
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable.ArrayBuffer
 import scala.xml.XML
 
 /** Submits SIF requests to Environments Provider.
@@ -37,11 +38,17 @@ class SifConsumer {
     httpPost.setEntity(new StringEntity(sifRequest.body.get))
 
     var response: SifResponse = null
-    val httpResponse = httpclient.execute(httpPost)
+    var httpResponse: CloseableHttpResponse = null
     try {
+      httpResponse = httpclient.execute(httpPost)
       response = getSifResponse(sifRequest, httpResponse)
+    } catch {
+      case e: Exception =>
+        response = getErrorResponse(sifRequest, e)
     } finally {
-      httpResponse.close()
+      if(httpResponse != null) {
+        httpResponse.close()
+      }
     }
     response
   }
@@ -57,11 +64,17 @@ class SifConsumer {
     setHttpHeaders(sifRequest, httpDelete)
 
     var response: SifResponse = null
-    val httpResponse = httpclient.execute(httpDelete)
+    var httpResponse: CloseableHttpResponse = null
     try {
+      httpResponse = httpclient.execute(httpDelete)
       response = getSifResponse(sifRequest, httpResponse)
+    } catch {
+      case e: Exception =>
+        response = getErrorResponse(sifRequest, e)
     } finally {
-      httpResponse.close()
+      if(httpResponse != null) {
+        httpResponse.close()
+      }
     }
     response
   }
@@ -77,11 +90,17 @@ class SifConsumer {
     setHttpHeaders(sifRequest, httpGet)
 
     var response: SifResponse = null
-    val httpResponse = httpclient.execute(httpGet)
+    var httpResponse: CloseableHttpResponse = null
     try {
+      httpResponse = httpclient.execute(httpGet)
       response = getSifResponse(sifRequest, httpResponse)
+    } catch {
+      case e: Exception =>
+        response = getErrorResponse(sifRequest, e)
     } finally {
-      httpResponse.close()
+      if(httpResponse != null) {
+        httpResponse.close()
+      }
     }
     response
   }
@@ -101,40 +120,71 @@ class SifConsumer {
     httpPut.setEntity(new StringEntity(sifRequest.body.get))
 
     var response: SifResponse = null
-    val httpResponse = httpclient.execute(httpPut)
+    var httpResponse: CloseableHttpResponse = null
     try {
+      httpResponse = httpclient.execute(httpPut)
       response = getSifResponse(sifRequest, httpResponse)
+    } catch {
+      case e: Exception =>
+        response = getErrorResponse(sifRequest, e)
     } finally {
-      httpResponse.close()
+      if(httpResponse != null) {
+        httpResponse.close()
+      }
     }
     response
   }
 
+  private def getErrorResponse(sifRequest: SifRequest, exception: Exception): SifResponse = {
+    val response = new SifResponse(SifTimestamp(), SifMessageId(), SifMessageType.Response, sifRequest)
+    response.exceptions += exception
+    response
+  }
+
   private def getSifResponse(sifRequest: SifRequest, httpResponse: CloseableHttpResponse): SifResponse = {
+
+    // maintain a collection of exceptions while processing, but do not fail to construct and return a response
+    val exceptions = new ArrayBuffer[Exception]()
+
+    // alert the response processor (after response has been constructed) if invalid Content-Type header was received while processing raw headers
+    var invalidContentType = false
+
+    // maintain a set of header variables used for later response construction
     var responseContentType: SifContentType = null
     var responseMessageId: SifMessageId = null
     var responseMessageType: SifMessageType = null
     var responseTimestamp: SifTimestamp = null
+
+    // header key names for headers requiring special validation/processing during initial raw header loop
     val KeyContentType = SifHttpHeader.ContentType.toString.toLowerCase
     val KeyMessageId = SifHeader.MessageId.toString.toLowerCase
     val KeyMessageType = SifHeader.MessageType.toString.toLowerCase
     val KeyTimestamp = SifHeader.Timestamp.toString.toLowerCase
 
-    // map all headers, and attempt to find SIF Response headers in the collection
+    // must temporarily store header map because a first pass through raw values is required to extract headers needed to construct response
     val headers = new TrieMap[String, String]
+
+    // map all headers, and attempt to find SIF Response headers in the collection
     for (header <- httpResponse.getAllHeaders) {
+
       val name = header.getName
       val value = header.getValue
+
+      // look for specific headers requiring pre-processing or extraction
       name.toLowerCase match {
+
         case KeyContentType =>
-          if(value.toLowerCase.startsWith(SifContentType.Xml.toString.toLowerCase)) {
+          // use startsWith on received values due to some providers sending extra Content-Type parameters in the value, such as UTF encoding
+          if (value.toLowerCase.startsWith(SifContentType.Xml.toString.toLowerCase)) {
             responseContentType = SifContentType.Xml
           }
-          if(value.toLowerCase.startsWith(SifContentType.Json.toString.toLowerCase)) {
+          if (value.toLowerCase.startsWith(SifContentType.Json.toString.toLowerCase)) {
             responseContentType = SifContentType.Json
           }
-          if(responseContentType == null) {
-            throw new SifContentTypeInvalidException("Response contains invalid %s: '%s'.".format(SifHttpHeader.ContentType.toString, value))
+          // if received Content-Type is not supported (not XML or JSON) add an exception to the response (some providers are returning HTML when errors occur on their end)
+          if (responseContentType == null) {
+            invalidContentType = true
+            exceptions += new SifContentTypeInvalidException("Response contains invalid %s: '%s'.".format(SifHttpHeader.ContentType.toString, value))
           }
 
         case KeyMessageId =>
@@ -148,14 +198,14 @@ class SifConsumer {
 
         case _ =>
       }
+
+      // add header to temp map, to be added to response headers collection later
       headers.putIfAbsent(name, value)
     }
 
     // if required headers were not found, set implicit defaults
-    if (responseContentType == null) {
-      responseContentType = SifContentType.Xml
-    }
     if (responseMessageId == null) {
+      // this should be provided in all responses per SIF spec, but this is not the case with all current providers
       responseMessageId = SifMessageId()
     }
     if (responseMessageType == null) {
@@ -165,15 +215,35 @@ class SifConsumer {
       responseTimestamp = SifTimestamp()
     }
 
-    // construct response and populate from HTTP response (status, headers, body)
+    // construct SIF response, populate from raw HTTP response (status, headers, body) and validate
     val response = new SifResponse(responseTimestamp, responseMessageId, responseMessageType, sifRequest)
     response.statusCode = httpResponse.getStatusLine.getStatusCode
+
     for (header <- headers) {
       response.addHeader(header._1, header._2)
     }
+
+    setContentType(response, responseContentType, invalidContentType)
     response.body = Option(EntityUtils.toString(httpResponse.getEntity))
+
+    for (exception <- exceptions) {
+      response.exceptions += exception
+    }
+
     validateResponse(response)
+
     response
+  }
+
+  private def setContentType(response: SifResponse, responseContentType: SifContentType, invalidContentType: Boolean): Unit = {
+    if (responseContentType != null) {
+      response.contentType = Option(responseContentType)
+    } else {
+      // if invalid Content-Type header was received, ensure response.contentType is set to None (defaults to XML otherwise).
+      if (invalidContentType) {
+        response.contentType = None
+      }
+    }
   }
 
   private def setHttpHeaders(sifRequest: SifRequest, httpRequest: HttpRequestBase): Unit = {
@@ -186,27 +256,27 @@ class SifConsumer {
     sifResponse.contentType.orNull match {
       case SifContentType.Xml =>
         try {
-          if(sifResponse.body.orNull != null && !sifResponse.body.get.isEmpty) {
+          if (sifResponse.body.orNull != null && !sifResponse.body.get.isEmpty) {
             XML.loadString(sifResponse.body.get)
           }
         } catch {
           case _: Throwable =>
-            throw new SifContentTypeInvalidException("Response %s set to '%s' but body does not contain valid XML.".format(SifHttpHeader.ContentType.toString, sifResponse.contentType.get.toString))
+            sifResponse.exceptions += new SifContentTypeInvalidException("Response %s set to '%s' but body does not contain valid XML.".format(SifHttpHeader.ContentType.toString, sifResponse.contentType.get.toString))
         }
 
       case SifContentType.Json =>
         try {
-          if(sifResponse.body.orNull != null && !sifResponse.body.get.isEmpty) {
+          if (sifResponse.body.orNull != null && !sifResponse.body.get.isEmpty) {
             parse(sifResponse.body.get)
           }
         } catch {
           case _: Throwable =>
-            throw new SifContentTypeInvalidException("Response %s set to '%s' but body does not contain valid JSON.".format(SifHttpHeader.ContentType.toString, sifResponse.contentType.get.toString))
+            sifResponse.exceptions += new SifContentTypeInvalidException("Response %s set to '%s' but body does not contain valid JSON.".format(SifHttpHeader.ContentType.toString, sifResponse.contentType.get.toString))
         }
 
       case _ =>
     }
-    true
+    sifResponse.exceptions.isEmpty
   }
 
   private def validateResponse(sifResponse: SifResponse): Boolean = {

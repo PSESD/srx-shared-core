@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.ArgumentNullException
+import org.psesd.srx.shared.core.exceptions.ArgumentNullOrEmptyOrWhitespaceException
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 
 /** Represents a SIF context.
   *
@@ -9,8 +10,8 @@ import org.psesd.srx.shared.core.exceptions.ArgumentNullException
   * @author Stephen Pugmire (iTrellis, LLC)
   */
 class SifContext(contextId: String) {
-  if (contextId == null) {
-    throw new ArgumentNullException("contextId parameter")
+  if (contextId.isNullOrEmpty) {
+    throw new ArgumentNullOrEmptyOrWhitespaceException("contextId parameter")
   }
 
   override def toString: String = {
@@ -19,8 +20,9 @@ class SifContext(contextId: String) {
 }
 
 object SifContext {
-  def apply(): SifContext = new SifContext(Default)
-  def apply(contextId: String): SifContext = new SifContext(contextId)
-
   final val Default = "DEFAULT"
+
+  def apply(): SifContext = new SifContext(Default)
+
+  def apply(contextId: String): SifContext = new SifContext(contextId)
 }

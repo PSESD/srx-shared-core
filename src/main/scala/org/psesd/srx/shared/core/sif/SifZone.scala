@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.ArgumentNullException
+import org.psesd.srx.shared.core.exceptions.ArgumentNullOrEmptyOrWhitespaceException
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 
 /** Represents a SIF zone.
   *
@@ -9,8 +10,8 @@ import org.psesd.srx.shared.core.exceptions.ArgumentNullException
   * @author Stephen Pugmire (iTrellis, LLC)
   */
 class SifZone(zoneId: String) {
-  if (zoneId == null) {
-    throw new ArgumentNullException("zoneId parameter")
+  if (zoneId.isNullOrEmpty) {
+    throw new ArgumentNullOrEmptyOrWhitespaceException("zoneId parameter")
   }
 
   override def toString: String = {
@@ -19,8 +20,9 @@ class SifZone(zoneId: String) {
 }
 
 object SifZone {
-  def apply(): SifZone = new SifZone(Default)
-  def apply(zoneId: String): SifZone = new SifZone(zoneId)
-
   final val Default = "DEFAULT"
+
+  def apply(): SifZone = new SifZone(Default)
+
+  def apply(zoneId: String): SifZone = new SifZone(zoneId)
 }
