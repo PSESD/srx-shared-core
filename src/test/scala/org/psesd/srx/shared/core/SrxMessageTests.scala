@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class SrxMessageTests extends FunSuite {
 
   test("empty message") {
-    val message = SrxMessage.getEmpty
+    val message = SrxMessage.getEmpty(TestValues.service)
     assert(message.messageId.getOrElse(SifMessageId()).toString.length.equals(36))
     assert(message.timestamp.toString.length > 0)
     assert(message.operation.getOrElse("").equals(""))
@@ -36,6 +36,7 @@ class SrxMessageTests extends FunSuite {
     val message = SrxMessage(
       Option(messageId),
       timestamp,
+      TestValues.service,
       Option(operation),
       Option(status),
       Option(source),

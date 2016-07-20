@@ -7,7 +7,7 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
 import org.psesd.srx.shared.core.SrxMessage
-import org.psesd.srx.shared.core.config.{Build, Environment}
+import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 import org.psesd.srx.shared.core.logging.LogLevel.LogLevel
 import org.psesd.srx.shared.core.sif.SifMessageId
@@ -40,8 +40,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
   private val serverName = Environment.getProperty(ServerNameKey)
 
   def getJsonString(): String = {
-    val version = s"${Build.version}.${Build.buildNumber.toString}"
-
+    val version = srxMessage.service.build
     val itemId = UUID.randomUUID.toString
     val timestamp = Instant.now.getMillis
     val title = srxMessage.description.getOrElse("None")

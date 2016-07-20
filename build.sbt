@@ -46,13 +46,4 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-client" % http4sVersion
 )
 
-// Build info
-lazy val root = (project in file(".")).
-  enablePlugins(BuildInfoPlugin).
-  settings(
-    buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, BuildInfoKey.map(buildInfoBuildNumber) { case (k, v) =>
-      "buildNumber" -> v
-    }),
-    buildInfoPackage := "org.psesd.srx.shared.core"
-  )
 

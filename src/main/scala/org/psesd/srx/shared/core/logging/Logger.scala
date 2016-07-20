@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core.logging
 
-import org.psesd.srx.shared.core.SrxMessage
+import org.psesd.srx.shared.core.{SrxMessage, SrxService}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions._
 import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
@@ -22,7 +22,7 @@ object Logger {
   private final val logLevel = getLogLevel
   private final val logger = getLogger
 
-  def log(level: LogLevel, message: String): Unit = {
+  def log(level: LogLevel, message: String, service: SrxService): Unit = {
     try {
       if (level == null) {
         throw new ArgumentNullException("level parameter")
@@ -35,6 +35,7 @@ object Logger {
       val srxMessage = SrxMessage(
         Option(SifMessageId()),
         SifTimestamp(),
+        service,
         None,
         None,
         None,

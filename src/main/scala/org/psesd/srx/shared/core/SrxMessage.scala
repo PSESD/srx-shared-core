@@ -18,6 +18,8 @@ import scala.xml.Elem
 object SrxMessage {
 
   private val messageFields = List(
+    "ServiceName",
+    "ServiceBuild",
     "MessageId",
     "Timestamp",
     "Operation",
@@ -31,7 +33,7 @@ object SrxMessage {
   )
 
   /** Returns an empty `Message` instance */
-  def getEmpty: SrxMessage = new SrxMessage(None, SifTimestamp(), None, None, None, None, None, None, None, None, None)
+  def getEmpty(service: SrxService): SrxMessage = new SrxMessage(None, SifTimestamp(), service, None, None, None, None, None, None, None, None, None)
 
   def fromString(s: String): SrxMessage = {
     if (s.isNullOrEmpty) {
@@ -44,8 +46,10 @@ object SrxMessage {
 
     val mapping: Map[String, String] = mapMessage(s)
 
-    new SrxMessage(Option(SifMessageId(mapping("messageid"))),
+    new SrxMessage(
+      Option(SifMessageId(mapping("messageid"))),
       SifTimestamp(mapping("timestamp")),
+      new SrxService("test", "test"),
       Option(SrxOperation.withNameCaseInsensitive(mapping("operation"))),
       Option(SrxOperationStatus.withNameCaseInsensitive(mapping("status"))),
       Option(mapping("source")),
@@ -74,8 +78,10 @@ object SrxMessage {
         if (hasRequiredFields) {
           val hasValidMessageId = SifMessageId.isValid(mapping("messageid"))
           val hasValidTimestamp = SifTimestamp.isValid(mapping("timestamp"))
+          val hasServiceName = SifTimestamp.isValid(mapping("serviceName"))
+          val hasServiceBuild = SifTimestamp.isValid(mapping("serviceBuild"))
 
-          hasRequiredFields && hasValidMessageId && hasValidTimestamp
+          hasRequiredFields && hasValidMessageId && hasValidTimestamp && hasServiceName && hasServiceBuild
         } else {
           false
         }
@@ -112,16 +118,17 @@ object SrxMessage {
 }
 
 case class SrxMessage(messageId: Option[SifMessageId],
-                   timestamp: SifTimestamp,
-                   operation: Option[SrxOperation],
-                   status: Option[SrxOperationStatus],
-                   source: Option[String],
-                   destination: Option[String],
-                   description: Option[String],
-                   body: Option[String],
-                   sourceIp: Option[String],
-                   userAgent: Option[String],
-                   requestContext: Option[SrxRequest]) {
+                      timestamp: SifTimestamp,
+                      service: SrxService,
+                      operation: Option[SrxOperation],
+                      status: Option[SrxOperationStatus],
+                      source: Option[String],
+                      destination: Option[String],
+                      description: Option[String],
+                      body: Option[String],
+                      sourceIp: Option[String],
+                      userAgent: Option[String],
+                      requestContext: Option[SrxRequest]) {
 
   /** @return `true` if the current instance is empty; otherwise `false`.
     * @note 'Empty' means:
@@ -151,6 +158,9 @@ case class SrxMessage(messageId: Option[SifMessageId],
     <message>
       <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
       <timestamp>{timestamp.toString}</timestamp>
+      <serviceName>{service.name}</serviceName>
+      <serviceBuild>{service.build}</serviceBuild>
+      <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
       <operation>{operation.getOrElse("None")}</operation>
       <status>{status.getOrElse("None")}</status>
       <source>{source.getOrElse("None")}</source>
@@ -163,8 +173,10 @@ case class SrxMessage(messageId: Option[SifMessageId],
   }
 
   override def toString: String = {
-    "MessageId: " + messageId.getOrElse(SifMessageId().toString) +
+      "MessageId: " + messageId.getOrElse(SifMessageId().toString) +
       ", Timestamp: " + timestamp.toString +
+      ", ServiceName: " + service.name +
+      ", ServiceBuild: " + service.build +
       ", Operation: " + operation.getOrElse(SrxOperation.None) +
       ", Status: " + status.getOrElse(SrxOperationStatus.None) +
       ", Source: " + source.getOrElse("None") +

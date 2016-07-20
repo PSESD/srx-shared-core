@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core.logging
 
-import org.psesd.srx.shared.core.{SrxMessage, SrxOperation, SrxOperationStatus, SrxRequest}
+import org.psesd.srx.shared.core._
 import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
 import org.scalatest.FunSuite
 
@@ -22,6 +22,7 @@ class RollbarClientTests extends FunSuite {
     val srxMessage = SrxMessage(
       Option(messageId),
       timestamp,
+      TestValues.service,
       Option(operation),
       Option(status),
       Option(source),
