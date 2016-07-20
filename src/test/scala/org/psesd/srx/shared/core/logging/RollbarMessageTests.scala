@@ -7,7 +7,7 @@ import org.scalatest.FunSuite
 class RollbarMessageTests extends FunSuite {
 
   test("valid message") {
-    val message = new RollbarMessage(SrxMessage.getEmpty(TestValues.service), LogLevel.Error).getJsonString()
+    val message = new RollbarMessage(SrxMessage.getEmpty(TestValues.srxService), LogLevel.Error).getJsonString()
     assert(!message.isEmpty)
     assert(message.startsWith("{\"access_token\""))
   }
@@ -22,7 +22,7 @@ class RollbarMessageTests extends FunSuite {
 
   test("logLevel null") {
     val thrown = intercept[ArgumentNullException] {
-      new RollbarMessage(SrxMessage.getEmpty(TestValues.service), null)
+      new RollbarMessage(SrxMessage.getEmpty(TestValues.srxService), null)
     }
     val expected = ExceptionMessage.NotNull.format("logLevel parameter")
     assert(thrown.getMessage.equals(expected))

@@ -35,7 +35,7 @@ object SrxMessage {
   /** Returns an empty `Message` instance */
   def getEmpty(service: SrxService): SrxMessage = new SrxMessage(None, SifTimestamp(), service, None, None, None, None, None, None, None, None, None)
 
-  def fromString(s: String): SrxMessage = {
+  def fromString(s: String, srxService: SrxService): SrxMessage = {
     if (s.isNullOrEmpty) {
       throw new ArgumentNullOrEmptyOrWhitespaceException("message value")
     }
@@ -49,7 +49,7 @@ object SrxMessage {
     new SrxMessage(
       Option(SifMessageId(mapping("messageid"))),
       SifTimestamp(mapping("timestamp")),
-      new SrxService("test", "test"),
+      srxService,
       Option(SrxOperation.withNameCaseInsensitive(mapping("operation"))),
       Option(SrxOperationStatus.withNameCaseInsensitive(mapping("status"))),
       Option(mapping("source")),
@@ -119,7 +119,7 @@ object SrxMessage {
 
 case class SrxMessage(messageId: Option[SifMessageId],
                       timestamp: SifTimestamp,
-                      service: SrxService,
+                      srxService: SrxService,
                       operation: Option[SrxOperation],
                       status: Option[SrxOperationStatus],
                       source: Option[String],
@@ -158,8 +158,8 @@ case class SrxMessage(messageId: Option[SifMessageId],
     <message>
       <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
       <timestamp>{timestamp.toString}</timestamp>
-      <serviceName>{service.name}</serviceName>
-      <serviceBuild>{service.build}</serviceBuild>
+      <serviceName>{srxService.service.name}</serviceName>
+      <serviceBuild>{srxService.service.version}</serviceBuild>
       <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
       <operation>{operation.getOrElse("None")}</operation>
       <status>{status.getOrElse("None")}</status>
@@ -175,8 +175,8 @@ case class SrxMessage(messageId: Option[SifMessageId],
   override def toString: String = {
       "MessageId: " + messageId.getOrElse(SifMessageId().toString) +
       ", Timestamp: " + timestamp.toString +
-      ", ServiceName: " + service.name +
-      ", ServiceBuild: " + service.build +
+      ", ServiceName: " + srxService.service.name +
+      ", ServiceBuild: " + srxService.service.version +
       ", Operation: " + operation.getOrElse(SrxOperation.None) +
       ", Status: " + status.getOrElse(SrxOperationStatus.None) +
       ", Source: " + source.getOrElse("None") +

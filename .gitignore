@@ -24,5 +24,10 @@ out
 
 # Environment
 env*.properties
-buildinfo.properties
-project/build.properties
+project/project/
+src/main/java/
+src/main/resources/
+src/main/scala-2.11/
+src/test/java/
+src/test/resources/
+src/test/scala-2.11/

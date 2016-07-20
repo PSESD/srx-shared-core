@@ -7,26 +7,26 @@ import org.scalatest.FunSuite
 class LoggerTests extends FunSuite {
 
   test("null level string") {
-    Logger.log(null, "Test local log string.", TestValues.service)
+    Logger.log(null, "Test local log string.", TestValues.srxService)
   }
 
   test("null message string") {
-    Logger.log(LogLevel.Local, "", TestValues.service)
+    Logger.log(LogLevel.Local, "", TestValues.srxService)
   }
 
   test("null level srxMessage") {
-    Logger.log(null, SrxMessage.getEmpty(TestValues.service))
+    Logger.log(null, SrxMessage.getEmpty(TestValues.srxService))
   }
 
   test("log local string") {
-    Logger.log(LogLevel.Local, "Test local log string.", TestValues.service)
+    Logger.log(LogLevel.Local, "Test local log string.", TestValues.srxService)
   }
 
   test("log local message") {
     val message = SrxMessage(
       Option(SifMessageId()),
       SifTimestamp(),
-      TestValues.service,
+      TestValues.srxService,
       None,
       None,
       None,
@@ -55,7 +55,7 @@ class LoggerTests extends FunSuite {
     val srxMessage = SrxMessage(
       Option(messageId),
       timestamp,
-      TestValues.service,
+      TestValues.srxService,
       Option(operation),
       Option(status),
       Option(source),

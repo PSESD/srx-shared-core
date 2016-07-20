@@ -1,40 +1,40 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullOrEmptyOrWhitespaceException, ExceptionMessage}
+import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SrxServiceTests extends FunSuite {
 
-  val name: String = "test"
-  val build: String = "1.0.1"
-
   test("valid service") {
-
-    val service = new SrxService(name, build)
-    assert(service.name.equals(name))
-    assert(service.build.equals(build))
+    val service = new SrxService(TestValues.srxService.service, TestValues.srxService.buildComponents)
+    assert(service.service.name.equals(TestValues.srxService.service.name))
+    assert(service.service.version.equals(TestValues.srxService.service.version))
+    assert(service.buildComponents.head.name.equals(TestValues.srxService.buildComponents.head.name))
+    assert(service.buildComponents.head.version.equals(TestValues.srxService.buildComponents.head.version))
   }
 
-  Map("null" -> null,
-    "empty" -> "",
-    "whitespace" -> "   ").foreach { case (key, value) =>
+  test("null service") {
 
-    test(s"$key name causes ArgumentNullOrEmptyOrWhitespaceException") {
-
-      val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-        new SrxService(value, build)
-      }
-      assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("name parameter")))
+    val thrown = intercept[ArgumentNullException] {
+      new SrxService(null, TestValues.srxService.buildComponents)
     }
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("service parameter")))
+  }
 
-    test(s"$key build causes ArgumentNullOrEmptyOrWhitespaceException") {
+  test("null build components") {
 
-      val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
-        new SrxService(name, value)
-      }
-      assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("build parameter")))
+    val thrown = intercept[ArgumentNullOrEmptyException] {
+      new SrxService(TestValues.srxService.service, null)
     }
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmpty.format("buildComponents parameter")))
+  }
 
+  test("empty build components") {
+
+    val thrown = intercept[ArgumentNullOrEmptyException] {
+      new SrxService(TestValues.srxService.service, List[SrxServiceComponent]())
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmpty.format("buildComponents parameter")))
   }
 
 }

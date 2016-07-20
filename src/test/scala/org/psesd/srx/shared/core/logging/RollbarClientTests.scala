@@ -22,7 +22,7 @@ class RollbarClientTests extends FunSuite {
     val srxMessage = SrxMessage(
       Option(messageId),
       timestamp,
-      TestValues.service,
+      TestValues.srxService,
       Option(operation),
       Option(status),
       Option(source),

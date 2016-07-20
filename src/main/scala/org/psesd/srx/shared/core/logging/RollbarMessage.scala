@@ -40,7 +40,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
   private val serverName = Environment.getProperty(ServerNameKey)
 
   def getJsonString(): String = {
-    val version = srxMessage.service.build
+    val version = srxMessage.srxService.service.version
     val itemId = UUID.randomUUID.toString
     val timestamp = Instant.now.getMillis
     val title = srxMessage.description.getOrElse("None")

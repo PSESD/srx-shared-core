@@ -3,7 +3,7 @@ machine:
   java:
     version: oraclejdk8
   environment:
-    SBT_VERSION: 0.13.11
+    SBT_VERSION: 0.13.12
     SBT_OPTS: "-Xms512M -Xmx1536M -Xss1M -XX:+CMSClassUnloadingEnabled"
 
 dependencies:
