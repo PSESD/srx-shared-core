@@ -29,6 +29,13 @@ class SifTimestampTests extends FunSuite {
     assert(actual.equals(expected))
   }
 
+  test("get milliseconds") {
+    val timestamp = SifTimestamp(sampleDateTime)
+    val expected = 1451671200000L
+    val actual = timestamp.getMilliseconds
+    assert(actual.equals(expected))
+  }
+
   test("invalid timestamp") {
     val thrown = intercept[ArgumentInvalidException] {
       SifTimestamp("1234")

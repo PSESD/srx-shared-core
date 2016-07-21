@@ -14,6 +14,10 @@ case class SifTimestamp(dateTime: DateTime) {
   override def toString: String = {
     ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).print(dateTime)
   }
+
+  def getMilliseconds: Long = {
+    dateTime.getMillis
+  }
 }
 
 object SifTimestamp {
