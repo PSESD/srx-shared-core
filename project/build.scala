@@ -24,6 +24,7 @@ object SrxSharedCoreBuild extends Build {
         "org.joda" % "joda-convert" % jodaConvertVersion,
         "joda-time" % "joda-time" % jodaTimeVersion,
         "org.json4s" % "json4s-native_2.11" % json4sVersion,
+        "org.json4s" % "json4s-jackson_2.11" % json4sVersion,
         "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
         "org.slf4j" % "slf4j-api" % slf4jVersion,
         "org.slf4j" % "slf4j-simple" % slf4jVersion

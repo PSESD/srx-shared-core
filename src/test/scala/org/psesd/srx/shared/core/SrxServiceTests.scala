@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core
 
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyException, ExceptionMessage}
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.scalatest.FunSuite
 
 class SrxServiceTests extends FunSuite {
@@ -35,6 +36,12 @@ class SrxServiceTests extends FunSuite {
       new SrxService(TestValues.srxService.service, List[SrxServiceComponent]())
     }
     assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmpty.format("buildComponents parameter")))
+  }
+
+  test("toXml") {
+    val service = TestValues.srxService
+    val serviceXml = service.toXml.toXmlString
+    assert(!serviceXml.isNullOrEmpty)
   }
 
 }
