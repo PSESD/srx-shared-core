@@ -67,8 +67,9 @@ class TypeExtensionTests extends FunSuite {
 
   test("xml toJsonString") {
     val actual = <test><foo>fighter</foo><stack>overflow</stack></test>.toJsonString
-    val expected = "{\r\n  \"test\" : {\r\n    \"foo\" : \"fighter\",\r\n    \"stack\" : \"overflow\"\r\n  }\r\n}"
-    assert(actual.equals(expected))
+    val expectedLinux = "{\n  \"test\" : {\n    \"foo\" : \"fighter\",\n    \"stack\" : \"overflow\"\n  }\n}"
+    val expectedWindows = "{\r\n  \"test\" : {\r\n    \"foo\" : \"fighter\",\r\n    \"stack\" : \"overflow\"\r\n  }\r\n}"
+    assert(actual.equals(expectedLinux) || actual.equals(expectedWindows))
   }
 
   test("xml toXmlString") {
