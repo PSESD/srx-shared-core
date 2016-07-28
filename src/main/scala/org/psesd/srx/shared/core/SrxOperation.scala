@@ -13,6 +13,7 @@ object SrxOperation extends ExtendedEnumeration {
   val Diagnostic = Value("Diagnostic")
   val DiagnosticEnvironment = Value("DiagnosticEnvironment")
   val DiagnosticHeaders = Value("DiagnosticHeaders")
+  val Info = Value("Info")
   val Messages = Value("Messages")
   val MessagesGetAll = Value("MessagesGetAll")
   val MessagesGetLatest = Value("MessagesGetLatest")

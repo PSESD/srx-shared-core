@@ -71,11 +71,4 @@ class SifResponseTests extends FunSuite {
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("messageType parameter")))
   }
 
-  test("null sifRequest") {
-    val thrown = intercept[ArgumentNullException] {
-      new SifResponse(timestamp, messageId, messageType, null)
-    }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("sifRequest parameter")))
-  }
-
 }

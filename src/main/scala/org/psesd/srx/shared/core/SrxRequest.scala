@@ -2,8 +2,9 @@ package org.psesd.srx.shared.core
 
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, SifRequestNotAuthorizedException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
+import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMethod
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
@@ -17,6 +18,18 @@ import org.psesd.srx.shared.core.sif._
 class SrxRequest private(val sifRequest: SifRequest) {
   if (sifRequest == null) {
     throw new ArgumentNullException("sifRequest parameter")
+  }
+
+  val acceptsJson: Boolean = {
+    sifRequest.accept.isDefined && sifRequest.accept.orNull.equals(SifContentType.Json)
+  }
+
+  val accepts = {
+    if(acceptsJson) {
+      SifContentType.Json
+    } else {
+      SifContentType.Xml
+    }
   }
 
   var destination = sifRequest.zone.toString
@@ -72,12 +85,27 @@ object SrxRequest {
     val zone = new SifZone(sifUri.zoneId.orNull)
     val context = new SifContext(sifUri.contextId.orNull)
 
+    // extract authorization
+    val authorizationHeader = httpRequest.headers.get(CaseInsensitiveString(SifHeader.Authorization.toString)).orNull
+    if (authorizationHeader == null) {
+      throw new ArgumentNullException("authorization header")
+    }
+
     // extract timestamp
     val timestampHeader = httpRequest.headers.get(CaseInsensitiveString(SifHeader.Timestamp.toString)).orNull
     if (timestampHeader == null) {
       throw new ArgumentNullException("timestamp header")
     }
     val timestamp = SifTimestamp(timestampHeader.value)
+
+    // validate authorization header
+    val authenticator = new SifAuthenticator(List[SifProvider](provider), List[SifAuthenticationMethod](provider.authenticationMethod))
+    try {
+      authenticator.validateRequestAuthorization(authorizationHeader.value, timestamp.toString)
+    } catch {
+      case e: Exception =>
+        throw new SifRequestNotAuthorizedException(e.getMessage)
+    }
 
     // construct SIF request
     val sifRequest = new SifRequest(provider, resourceUri, zone, context, timestamp)
@@ -109,7 +137,7 @@ object SrxRequest {
   }
 
   private def getAccept(httpRequest: Request): Option[SifContentType] = {
-    val headerValue = getHeaderValue(httpRequest, SifHeader.MessageType.toString)
+    val headerValue = getHeaderValue(httpRequest, SifHeader.Accept.toString)
     if (headerValue.isNullOrEmpty) {
       None
     } else {

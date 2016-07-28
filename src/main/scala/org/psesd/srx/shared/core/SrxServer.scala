@@ -5,8 +5,8 @@ import org.http4s.server.blaze.BlazeBuilder
 import org.http4s.server.{Router, ServerApp}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
-import org.psesd.srx.shared.core.extensions.TypeExtensions._
-import org.psesd.srx.shared.core.sif.{SifContentType, SifProvider}
+import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
+import org.psesd.srx.shared.core.sif._
 
 import scala.concurrent.ExecutionContext
 
@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 trait SrxServer extends ServerApp {
 
   private final val ServerApiRootKey = "SERVER_API_ROOT"
@@ -48,28 +48,59 @@ trait SrxServer extends ServerApp {
       Ok(true.toString)
 
     case req@GET -> Root / _ if req.pathInfo.startsWith("/info") =>
-      var info: String = ""
-      var exception: Exception = null
-      try {
-        info = getInfo(req)
-      } catch {
-        case e: Exception =>
-          exception = e
-      }
-      if(exception == null) {
-        Ok(info)
-      } else {
-        InternalServerError(exception.getMessage)
-      }
+      respondWithInfo(getDefaultSrxResponse(req)).toHttpResponse
+
   }
 
-  def getInfo(httpRequest: Request): String = {
-    val srxRequest = SrxRequest(sifProvider, httpRequest)
-    if (srxRequest.sifRequest.accept.isEmpty || srxRequest.sifRequest.accept.orNull.equals(SifContentType.Xml)) {
-      srxService.toXml.toXmlString
-    } else {
-      srxService.toXml.toJsonString
+  def getDefaultSrxResponse(httpRequest: Request): SrxResponse = {
+    var srxResponse: SrxResponse = null
+    try {
+      val srxRequest = SrxRequest(sifProvider, httpRequest)
+      srxResponse = new SrxResponse(srxRequest)
+      srxResponse.sifResponse.statusCode = Ok.code
+    } catch {
+      case ae: SifRequestNotAuthorizedException =>
+        srxResponse = getErrorSrxResponse
+        srxResponse.setError(new SifError(
+          Unauthorized.code,
+          SrxOperation.Info.toString,
+          Unauthorized.reason,
+          ae.getMessage
+        ))
+
+      case e: Exception =>
+        srxResponse = getErrorSrxResponse
+        srxResponse.setError(new SifError(
+          BadRequest.code,
+          SrxOperation.Info.toString,
+          BadRequest.reason,
+          e.getMessage
+        ))
     }
+    srxResponse
+  }
+
+  private def getErrorSrxResponse: SrxResponse = {
+    val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
+    val srxRequest = SrxRequest(sifRequest)
+    new SrxResponse(srxRequest)
+  }
+
+  private def respondWithInfo(srxResponse: SrxResponse): SrxResponse = {
+    if (!srxResponse.hasError) {
+      try {
+        srxResponse.sifResponse.bodyXml = Option(srxService.toXml)
+      } catch {
+        case e: Exception =>
+          srxResponse.setError(new SifError(
+            InternalServerError.code,
+            SrxOperation.Info.toString,
+            "Unhandled exception retrieving service info.",
+            e.getMessage
+          ))
+      }
+    }
+    srxResponse
   }
 
 }

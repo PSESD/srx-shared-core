@@ -1,16 +1,19 @@
 package org.psesd.srx.shared.core.sif
 
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
+import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifMessageType.SifMessageType
 
 import scala.collection.concurrent.TrieMap
+import scala.xml.Node
 
 /** Represents a SIF response.
   *
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 class SifResponse(timestamp: SifTimestamp,
                   val messageId: SifMessageId,
                   val messageType: SifMessageType,
@@ -24,12 +27,51 @@ class SifResponse(timestamp: SifTimestamp,
   if (messageType == null) {
     throw new ArgumentNullException("messageType parameter")
   }
-  if (sifRequest == null) {
-    throw new ArgumentNullException("sifRequest parameter")
-  }
 
-  val responseAction = sifRequest.requestAction.orElse(None)
+  val responseAction = {
+    if (sifRequest == null) {
+      None
+    } else {
+      sifRequest.requestAction.orElse(None)
+    }
+  }
+  var bodyXml: Option[Node] = None
+  var error: Option[SifError] = None
   var statusCode: Int = 0
+
+  def getBody(contentType: SifContentType): String = {
+    contentType match {
+
+      case SifContentType.Json =>
+        if (error.isDefined) {
+          error.get.toXml.toJsonString
+        } else {
+          if (bodyXml.isDefined) {
+            bodyXml.get.toJsonString
+          } else {
+            if (body.isDefined) {
+              body.get
+            } else {
+              ""
+            }
+          }
+        }
+      case SifContentType.Xml =>
+        if (error.isDefined) {
+          error.get.toXml.toXmlString
+        } else {
+          if (bodyXml.isDefined) {
+            bodyXml.get.toXmlString
+          } else {
+            if (body.isDefined) {
+              body.get
+            } else {
+              ""
+            }
+          }
+        }
+    }
+  }
 
   def getHeaders: TrieMap[String, String] = {
     addHeader(SifHttpHeader.ContentType.toString, contentType.getOrElse("").toString)

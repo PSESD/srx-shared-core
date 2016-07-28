@@ -46,8 +46,25 @@ class SrxRequestTests extends FunSuite {
     assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri parameter")))
   }
 
+  test("null authorization header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString)
+    )
+    val thrown = intercept[ArgumentNullException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("authorization header")))
+  }
+
   test("null timestamp header") {
-    val httpRequest = new Request(Method.GET, new Uri(None, None, testSrxUri.toString))
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString)
+      )
+    )
     val thrown = intercept[ArgumentNullException] {
       SrxRequest(TestValues.sifProvider, httpRequest)
     }
@@ -55,10 +72,14 @@ class SrxRequestTests extends FunSuite {
   }
 
   test("valid request") {
-    val headers = Headers(
-      Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
+      )
     )
-    val httpRequest = new Request(Method.GET, new Uri(None, None, testSrxUri.toString), HttpVersion.`HTTP/1.0`, headers)
     val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
     assert(srxRequest.destination.equals("test"))
     assert(srxRequest.errorMessage.equals(""))
@@ -73,6 +94,21 @@ class SrxRequestTests extends FunSuite {
     assert(srxRequest.sifRequest.requestAction.orNull.toString.equals(SifRequestAction.Query.toString))
     assert(srxRequest.sifRequest.uri.toString.equals(testSrxUri.toString))
     assert(srxRequest.sifRequest.timestamp.toString.equals(TestValues.timestamp.toString))
+    assert(!srxRequest.acceptsJson)
+  }
+
+  test("accepts Json") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.Accept.toString), SifContentType.Json.toString)
+      )
+    )
+    val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
+    assert(srxRequest.acceptsJson)
   }
 
 }

@@ -1,11 +1,13 @@
 package org.psesd.srx.shared.core
 
+import java.util.UUID
+
 import org.apache.http.HttpStatus
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.apache.http.util.EntityUtils
 import org.psesd.srx.shared.core.config.Environment
-import org.psesd.srx.shared.core.sif.{SifConsumer, SifRequest}
+import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -55,12 +57,60 @@ class SrxServerTests extends FunSuite {
     // execute SIF request
     val sifRequest = new SifRequest(TestValues.sifProvider, "info")
     val response = new SifConsumer().query(sifRequest)
+    val responseBody = response.body.getOrElse("")
     assert(response.statusCode.equals(HttpStatus.SC_OK))
-    assert(response.body.getOrElse("").contains("service"))
+    assert(responseBody.contains("<service>"))
 
     // start server
     Await.result(tempServer, AwaitResultDuration)
   }
+
+  ignore("info with invalid session token") {
+    // execute SIF request
+    val invalidProvider = new SifProvider(TestValues.sifUrl, SifProviderSessionToken(UUID.randomUUID.toString), TestValues.sharedSecret, TestValues.sifAuthenticationMethod)
+    val sifRequest = new SifRequest(invalidProvider, "info")
+    val response = new SifConsumer().query(sifRequest)
+    val responseBody = response.body.getOrElse("")
+    assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+    assert(responseBody.contains("<scope>Info</scope>"))
+    assert(responseBody.contains("<message>Unauthorized</message>"))
+    assert(responseBody.contains("<description>SIF user or session '"))
+
+    // start server
+    Await.result(tempServer, AwaitResultDuration)
+  }
+
+  ignore("info with invalid shared secret") {
+    // execute SIF request
+    val invalidProvider = new SifProvider(TestValues.sifUrl, TestValues.sessionToken, SifProviderSharedSecret("invalid"), TestValues.sifAuthenticationMethod)
+    val sifRequest = new SifRequest(invalidProvider, "info")
+    val response = new SifConsumer().query(sifRequest)
+    val responseBody = response.body.getOrElse("")
+    assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+    assert(responseBody.contains("<scope>Info</scope>"))
+    assert(responseBody.contains("<message>Unauthorized</message>"))
+    assert(responseBody.contains("<description>The authorization parameter is invalid.</description>"))
+
+    // start server
+    Await.result(tempServer, AwaitResultDuration)
+  }
+
+  ignore("info with invalid authentication method") {
+    // execute SIF request
+    val invalidProvider = new SifProvider(TestValues.sifUrl, TestValues.sessionToken, TestValues.sharedSecret, SifAuthenticationMethod.Basic)
+    val sifRequest = new SifRequest(invalidProvider, "info")
+    val response = new SifConsumer().query(sifRequest)
+    val responseBody = response.body.getOrElse("")
+    assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+    assert(responseBody.contains("<scope>Info</scope>"))
+    assert(responseBody.contains("<message>Unauthorized</message>"))
+    assert(responseBody.contains("<description>SIF authentication method 'Basic' is invalid.</description>"))
+
+    // start server
+    Await.result(tempServer, AwaitResultDuration)
+  }
+
+  //new SifProvider(sifUrl, sessionToken, sharedSecret, sifAuthenticationMethod)
 
   private def delayedInterrupt(delay: Long) {
     delayedInterrupt(Thread.currentThread, delay)
