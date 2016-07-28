@@ -128,7 +128,7 @@ case class SrxMessage(messageId: Option[SifMessageId],
                       body: Option[String],
                       sourceIp: Option[String],
                       userAgent: Option[String],
-                      requestContext: Option[SrxRequest]) {
+                      srxRequest: Option[SrxRequest]) {
 
   /** @return `true` if the current instance is empty; otherwise `false`.
     * @note 'Empty' means:
@@ -150,7 +150,7 @@ case class SrxMessage(messageId: Option[SifMessageId],
         body.isEmpty &&
         sourceIp.isEmpty &&
         userAgent.isEmpty &&
-        requestContext.isEmpty
+        srxRequest.isEmpty
     }
   }
 

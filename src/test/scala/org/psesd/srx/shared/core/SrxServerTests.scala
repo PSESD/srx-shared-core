@@ -1,9 +1,11 @@
 package org.psesd.srx.shared.core
 
+import org.apache.http.HttpStatus
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.apache.http.util.EntityUtils
 import org.psesd.srx.shared.core.config.Environment
+import org.psesd.srx.shared.core.sif.{SifConsumer, SifRequest}
 import org.scalatest.FunSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -50,21 +52,11 @@ class SrxServerTests extends FunSuite {
   }
 
   ignore("info") {
-    var actual = ""
-    tempServer onComplete {
-      case Success(x) =>
-        assert(!actual.isEmpty)
-      case _ =>
-    }
-
-    // wait for server to init
-    Thread.sleep(2000)
-
-    // ping server and collect response
-    val httpclient: CloseableHttpClient = HttpClients.custom().disableCookieManagement().build()
-    val httpGet = new HttpGet("http://localhost:%s/info".format(Environment.getPropertyOrElse("SERVER_PORT", "80")))
-    val response = httpclient.execute(httpGet)
-    actual = EntityUtils.toString(response.getEntity)
+    // execute SIF request
+    val sifRequest = new SifRequest(TestValues.sifProvider, "info")
+    val response = new SifConsumer().query(sifRequest)
+    assert(response.statusCode.equals(HttpStatus.SC_OK))
+    assert(response.body.getOrElse("").contains("service"))
 
     // start server
     Await.result(tempServer, AwaitResultDuration)
@@ -91,6 +83,8 @@ class SrxServerTests extends FunSuite {
 
   private object srxServer extends SrxServer {
     def srxService = TestValues.srxService
+
+    def sifProvider = TestValues.sifProvider
   }
 
 }

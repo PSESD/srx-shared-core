@@ -64,12 +64,12 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     var method = ""
     var body = ""
     var userIp = ""
-    val requestContext = message.requestContext.orNull
-    if (requestContext != null) {
-      url = requestContext.uri
-      method = requestContext.method
-      body = requestContext.body
-      userIp = requestContext.sourceIp
+    val srxRequest = message.srxRequest.orNull
+    if (srxRequest != null) {
+      url = srxRequest.sifRequest.uri.toString
+      method = srxRequest.method
+      body = srxRequest.sifRequest.body.getOrElse("")
+      userIp = srxRequest.sourceIp
     }
     new request(url, method, HeadersToken, body, userIp)
   }
@@ -86,21 +86,21 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     attributes.append(",\"source_ip\":%s".format(write(message.sourceIp.getOrElse("None"))))
     attributes.append(",\"user_agent\":%s".format(write(message.userAgent.getOrElse("None"))))
 
-    val requestContext = message.requestContext.orNull
-    if (requestContext != null) {
-      if (requestContext.errorMessage != null && !requestContext.errorMessage.isEmpty) {
-        attributes.append(",\"error_message\":%s".format(write(requestContext.errorMessage)))
+    val srxRequest = message.srxRequest.orNull
+    if (srxRequest != null) {
+      if (srxRequest.errorMessage != null && !srxRequest.errorMessage.isEmpty) {
+        attributes.append(",\"error_message\":%s".format(write(srxRequest.errorMessage)))
       }
-      if (requestContext.errorStackTrace != null && !requestContext.errorStackTrace.isEmpty) {
-        attributes.append(",\"error_stack_trace\":%s".format(write(requestContext.errorStackTrace)))
+      if (srxRequest.errorStackTrace != null && !srxRequest.errorStackTrace.isEmpty) {
+        attributes.append(",\"error_stack_trace\":%s".format(write(srxRequest.errorStackTrace)))
       }
     }
 
     // inject originating request headers
     val headers = new StringBuilder("{")
-    if (requestContext != null && requestContext.headers != null) {
+    if (srxRequest != null) {
       var sep = ""
-      for ((key, value) <- requestContext.headers) {
+      for ((key, value) <- srxRequest.sifRequest.getHeaders) {
         headers.append("%s%s:%s".format(sep, write(key), write(value)))
         sep = ","
       }

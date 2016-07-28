@@ -1,7 +1,7 @@
 package org.psesd.srx.shared.core.logging
 
 import org.psesd.srx.shared.core._
-import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
+import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
 class RollbarClientTests extends FunSuite {
@@ -17,8 +17,8 @@ class RollbarClientTests extends FunSuite {
     val body = "body"
     val sourceIp = "sourceIp"
     val userAgent = "userAgent"
-    val srxRequest = new SrxRequest(0, null, null, null)
-    val srxRequestMessageId = srxRequest.messageId
+    val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifZone(), SifContext(), SifTestValues.timestamp)
+    val srxRequest = SrxRequest(sifRequest)
     val srxMessage = SrxMessage(
       Option(messageId),
       timestamp,

@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
+import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
 class SrxMessageTests extends FunSuite {
@@ -17,7 +17,7 @@ class SrxMessageTests extends FunSuite {
     assert(message.body.getOrElse("").equals(""))
     assert(message.sourceIp.getOrElse("").equals(""))
     assert(message.userAgent.getOrElse("").equals(""))
-    assert(message.requestContext.orNull == null)
+    assert(message.srxRequest.orNull == null)
   }
 
   test("valid message") {
@@ -31,8 +31,8 @@ class SrxMessageTests extends FunSuite {
     val body = "body"
     val sourceIp = "sourceIp"
     val userAgent = "userAgent"
-    val srxRequest = new SrxRequest(0, null, null, null)
-    val srxRequestMessageId = srxRequest.messageId
+    val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifZone(), SifContext(), SifTestValues.timestamp)
+    val srxRequest = SrxRequest(sifRequest)
     val message = SrxMessage(
       Option(messageId),
       timestamp,
@@ -57,7 +57,6 @@ class SrxMessageTests extends FunSuite {
     assert(message.body.getOrElse("").equals(body))
     assert(message.sourceIp.getOrElse("").equals(sourceIp))
     assert(message.userAgent.getOrElse("").equals(userAgent))
-    assert(message.requestContext.orNull.messageId.toString.equals(srxRequestMessageId.toString))
   }
 
 }
