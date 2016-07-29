@@ -3,6 +3,7 @@ package org.psesd.srx.shared.core
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, SifRequestNotAuthorizedException}
+import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMethod
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
@@ -14,7 +15,7 @@ import org.psesd.srx.shared.core.sif._
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 class SrxRequest private(val sifRequest: SifRequest) {
   if (sifRequest == null) {
     throw new ArgumentNullException("sifRequest parameter")
@@ -25,7 +26,7 @@ class SrxRequest private(val sifRequest: SifRequest) {
   }
 
   val accepts = {
-    if(acceptsJson) {
+    if (acceptsJson) {
       SifContentType.Json
     } else {
       SifContentType.Xml
@@ -131,12 +132,12 @@ object SrxRequest {
     sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
 
     // set body
-    sifRequest.body = Option(httpRequest.body.toString) // TODO: Confirm this works/encodes correctly!
+    sifRequest.body = Option(httpRequest.body.value)
 
     sifRequest
   }
 
-  private def getAccept(httpRequest: Request): Option[SifContentType] = {
+  def getAccept(httpRequest: Request): Option[SifContentType] = {
     val headerValue = getHeaderValue(httpRequest, SifHeader.Accept.toString)
     if (headerValue.isNullOrEmpty) {
       None
@@ -153,7 +154,7 @@ object SrxRequest {
     }
   }
 
-  private def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
+  def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
     val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
     if (header == null) {
       None

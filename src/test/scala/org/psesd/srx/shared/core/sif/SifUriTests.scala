@@ -19,28 +19,28 @@ class SifUriTests extends FunSuite {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
       SifUri(null)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri")))
   }
 
   test("empty uri") {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
       SifUri("")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri")))
   }
 
   test("whitespace uri") {
     val thrown = intercept[ArgumentNullOrEmptyOrWhitespaceException] {
       SifUri(" ")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.NotNullOrEmptyOrWhitespace.format("sifUri")))
   }
 
   test("invalid uri") {
     val thrown = intercept[ArgumentInvalidException] {
       SifUri("not_a_valid_uri")
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri")))
   }
 
 }

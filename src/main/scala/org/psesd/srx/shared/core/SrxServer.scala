@@ -60,7 +60,7 @@ trait SrxServer extends ServerApp {
       srxResponse.sifResponse.statusCode = Ok.code
     } catch {
       case ae: SifRequestNotAuthorizedException =>
-        srxResponse = getErrorSrxResponse
+        srxResponse = getErrorSrxResponse(httpRequest)
         srxResponse.setError(new SifError(
           Unauthorized.code,
           SrxOperation.Info.toString,
@@ -69,7 +69,7 @@ trait SrxServer extends ServerApp {
         ))
 
       case e: Exception =>
-        srxResponse = getErrorSrxResponse
+        srxResponse = getErrorSrxResponse(httpRequest)
         srxResponse.setError(new SifError(
           BadRequest.code,
           SrxOperation.Info.toString,
@@ -80,8 +80,13 @@ trait SrxServer extends ServerApp {
     srxResponse
   }
 
-  private def getErrorSrxResponse: SrxResponse = {
+  private def getErrorSrxResponse(httpRequest: Request): SrxResponse = {
     val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
+    try {
+      sifRequest.accept = SrxRequest.getAccept(httpRequest)
+    } catch {
+      case _ : Throwable =>
+    }
     val srxRequest = SrxRequest(sifRequest)
     new SrxResponse(srxRequest)
   }

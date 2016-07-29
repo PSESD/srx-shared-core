@@ -43,7 +43,7 @@ class SrxRequestTests extends FunSuite {
     val thrown = intercept[ArgumentInvalidException] {
       SrxRequest(TestValues.sifProvider, httpRequest)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("sifUri")))
   }
 
   test("null authorization header") {

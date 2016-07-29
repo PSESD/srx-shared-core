@@ -32,10 +32,10 @@ object SifUri {
 
 class SifUri(sifUri: String) {
   if (sifUri.isNullOrEmpty) {
-    throw new ArgumentNullOrEmptyOrWhitespaceException("sifUri parameter")
+    throw new ArgumentNullOrEmptyOrWhitespaceException("sifUri")
   }
   if (!SifUri.isValid(sifUri)) {
-    throw new ArgumentInvalidException("sifUri parameter")
+    throw new ArgumentInvalidException("sifUri")
   }
 
   override def toString: String = {

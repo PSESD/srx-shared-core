@@ -10,6 +10,6 @@ import org.psesd.srx.shared.core.extensions.ExtendedEnumeration
   **/
 object SifContentType extends ExtendedEnumeration {
   type SifContentType = Value
-  val Json = Value("application/json")
-  val Xml = Value("application/xml")
+  val Json = Value("application/json; charset=UTF-8")
+  val Xml = Value("application/xml; charset=UTF-8")
 }
