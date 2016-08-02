@@ -97,8 +97,8 @@ class SrxMessageTests extends FunSuite {
     val uri = "https://localhost/xSre;zoneId=DEFAULT;contextId=DEFAULT"
     val userAgent = "userAgent"
     val sourceIp = "sourceIp"
-    val headersLinux = "x-forwarded-for: sourceIp\ntimestamp: 2015-02-24T20:51:59.878Z\nrequestType: IMMEDIATE\ngeneratorId: generatorId\nrequestId: requestId\nmessageType: REQUEST\nserviceType: OBJECT\nContent-Type: application/xml; charset=UTF-8\nuser-agent: userAgent\naccept: application/xml; charset=UTF-8\nauthorization: SIF_HMACSHA256 YWQ1M2RiZjYtZTBhMC00NjlmLTg0MjgtYzE3NzM4ZWJhNDNlOmpVSnprUWhBWDBaSHB3a0VPSmMzQnE2dENjSjB2VUd3RGRMRndVdHFPSjA9\nrequestAction: QUERY"
-    val headersWindows = "x-forwarded-for: sourceIp\r\ntimestamp: 2015-02-24T20:51:59.878Z\r\nrequestType: IMMEDIATE\r\ngeneratorId: generatorId\r\nrequestId: requestId\r\nmessageType: REQUEST\r\nserviceType: OBJECT\r\nContent-Type: application/xml; charset=UTF-8\r\nuser-agent: userAgent\r\naccept: application/xml; charset=UTF-8\r\nauthorization: SIF_HMACSHA256 YWQ1M2RiZjYtZTBhMC00NjlmLTg0MjgtYzE3NzM4ZWJhNDNlOmpVSnprUWhBWDBaSHB3a0VPSmMzQnE2dENjSjB2VUd3RGRMRndVdHFPSjA9\r\nrequestAction: QUERY"
+    val headersLinux = "x-forwarded-for: sourceIp\ntimestamp: 2015-02-24T20:51:59.878Z\nrequestType: IMMEDIATE\ngeneratorId: generatorId\nrequestId: requestId\nmessageType: REQUEST\nserviceType: OBJECT\nContent-Type: application/xml; charset=UTF-8\nuser-agent: userAgent\naccept: application/xml; charset=UTF-8\nrequestAction: QUERY"
+    val headersWindows = "x-forwarded-for: sourceIp\r\ntimestamp: 2015-02-24T20:51:59.878Z\r\nrequestType: IMMEDIATE\r\ngeneratorId: generatorId\r\nrequestId: requestId\r\nmessageType: REQUEST\r\nserviceType: OBJECT\r\nContent-Type: application/xml; charset=UTF-8\r\nuser-agent: userAgent\r\naccept: application/xml; charset=UTF-8\r\nrequestAction: QUERY"
     val body = "body"
     val sifRequest = new SifRequest(SifTestValues.sifProvider, "xSre", SifZone(), SifContext(), SifTestValues.timestamp)
     sifRequest.requestAction = Some(SifRequestAction.Query)

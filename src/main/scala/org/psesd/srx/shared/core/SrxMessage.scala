@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core
 
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
-import org.psesd.srx.shared.core.sif.{SifContext, SifMessageId, SifTimestamp, SifZone}
+import org.psesd.srx.shared.core.sif._
 
 import scala.xml.Node
 
@@ -159,9 +159,12 @@ class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val ti
       val sb = new StringBuilder()
       var newLine: String = ""
       for (header <- srxRequest.get.sifRequest.getHeaders) {
-        sb.append("%s%s: %s".format(newLine, header._1, header._2))
-        if (newLine.isEmpty) {
-          newLine = "\r\n"
+        // do not expose restricted headers in messages
+        if(!SifHeader.isRestricted(header._1)) {
+          sb.append("%s%s: %s".format(newLine, header._1, header._2))
+          if (newLine.isEmpty) {
+            newLine = "\r\n"
+          }
         }
       }
       sb.toString

@@ -10,6 +10,7 @@ import org.psesd.srx.shared.core.SrxMessage
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 import org.psesd.srx.shared.core.logging.LogLevel.LogLevel
+import org.psesd.srx.shared.core.sif.SifHeader
 
 /** Represents a Rollbar item message.
   *
@@ -106,8 +107,11 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     if (message.srxRequest.isDefined) {
       var sep = ""
       for ((key, value) <- message.srxRequest.get.sifRequest.getHeaders) {
-        headers.append("%s%s:%s".format(sep, write(key), write(value)))
-        sep = ","
+        // do not write restricted headers to Rollbar
+        if(!SifHeader.isRestricted(key)) {
+          headers.append("%s%s:%s".format(sep, write(key), write(value)))
+          sep = ","
+        }
       }
     }
     headers.append("}")

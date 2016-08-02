@@ -22,4 +22,8 @@ object SifHeader extends ExtendedEnumeration {
   val ResponseAction = Value("responseAction")
   val ServiceType = Value("serviceType")
   val Timestamp = Value("timestamp")
+
+  def isRestricted(name: String): Boolean = {
+    name.toLowerCase.equals(Authorization.toString.toLowerCase)
+  }
 }
