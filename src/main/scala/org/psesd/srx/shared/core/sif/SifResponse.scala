@@ -35,6 +35,23 @@ class SifResponse(timestamp: SifTimestamp,
       sifRequest.requestAction.orElse(None)
     }
   }
+
+  requestId = {
+    if (sifRequest == null) {
+      None
+    } else {
+      sifRequest.requestId.orElse(None)
+    }
+  }
+
+  serviceType = {
+    if (sifRequest == null) {
+      None
+    } else {
+      sifRequest.serviceType.orElse(None)
+    }
+  }
+
   var bodyXml: Option[Node] = None
   var error: Option[SifError] = None
   var statusCode: Int = 0

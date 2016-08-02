@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 trait SrxServer extends ServerApp {
 
   private final val ServerApiRootKey = "SERVER_API_ROOT"
@@ -33,10 +33,10 @@ trait SrxServer extends ServerApp {
     .start
 
   def service(implicit executionContext: ExecutionContext = ExecutionContext.global): HttpService = Router(
-    "" -> rootService
+    "" -> serviceRouter
   )
 
-  def rootService(implicit executionContext: ExecutionContext) = HttpService {
+  protected def serviceRouter(implicit executionContext: ExecutionContext) = HttpService {
 
     case req@GET -> Root =>
       Ok()
@@ -52,7 +52,7 @@ trait SrxServer extends ServerApp {
 
   }
 
-  def getDefaultSrxResponse(httpRequest: Request): SrxResponse = {
+  protected def getDefaultSrxResponse(httpRequest: Request): SrxResponse = {
     var srxResponse: SrxResponse = null
     try {
       val srxRequest = SrxRequest(sifProvider, httpRequest)
@@ -84,14 +84,17 @@ trait SrxServer extends ServerApp {
     val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
     try {
       sifRequest.accept = SrxRequest.getAccept(httpRequest)
+      sifRequest.requestAction = SrxRequest.getRequestAction(httpRequest)
+      sifRequest.requestId = SrxRequest.getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
+      sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(SrxRequest.getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
     } catch {
-      case _ : Throwable =>
+      case _: Throwable =>
     }
     val srxRequest = SrxRequest(sifRequest)
     new SrxResponse(srxRequest)
   }
 
-  private def respondWithInfo(srxResponse: SrxResponse): SrxResponse = {
+  protected def respondWithInfo(srxResponse: SrxResponse): SrxResponse = {
     if (!srxResponse.hasError) {
       try {
         srxResponse.sifResponse.bodyXml = Option(srxService.toXml)

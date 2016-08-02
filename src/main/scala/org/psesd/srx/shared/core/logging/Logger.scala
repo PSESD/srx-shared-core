@@ -3,7 +3,6 @@ package org.psesd.srx.shared.core.logging
 import org.psesd.srx.shared.core.{SrxMessage, SrxService}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions._
-import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
 
 /** Logging functions shared by SRX components and services.
   *
@@ -32,20 +31,7 @@ object Logger {
         throw new ArgumentNullOrEmptyOrWhitespaceException("message parameter")
       }
 
-      val srxMessage = SrxMessage(
-        Option(SifMessageId()),
-        SifTimestamp(),
-        service,
-        None,
-        None,
-        None,
-        None,
-        Option(message),
-        None,
-        None,
-        None,
-        None
-      )
+      val srxMessage = SrxMessage(service, message)
 
       log(level, srxMessage)
     } catch {
@@ -64,27 +50,22 @@ object Logger {
         throw new ArgumentNullException("srxMessage parameter")
       }
 
-      val description = srxMessage.description.orNull
-      if (description == null || description.isEmpty) {
-        throw new ArgumentNullOrEmptyOrWhitespaceException("srxMessage.description parameter")
-      }
-
       level match {
         case Local =>
           if (logLevel == LogLevel.Local) {
-            logger.debug(description)
+            logger.debug(srxMessage.description)
           }
 
         case Debug =>
           if (logLevel == LogLevel.Debug) {
-            logger.debug(description)
+            logger.debug(srxMessage.description)
             sendToRollbar(logLevel, srxMessage)
           }
 
         case Info =>
           if (logLevel == LogLevel.Debug
             || logLevel == LogLevel.Info) {
-            logger.info(description)
+            logger.info(srxMessage.description)
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -92,7 +73,7 @@ object Logger {
           if (logLevel == LogLevel.Debug
             || logLevel == LogLevel.Info
             || logLevel == LogLevel.Warning) {
-            logger.warn(description)
+            logger.warn(srxMessage.description)
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -101,7 +82,7 @@ object Logger {
             || logLevel == LogLevel.Info
             || logLevel == LogLevel.Warning
             || logLevel == LogLevel.Error) {
-            logger.error(description)
+            logger.error(srxMessage.description)
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -111,7 +92,7 @@ object Logger {
             || logLevel == LogLevel.Warning
             || logLevel == LogLevel.Error
             || logLevel == LogLevel.Critical) {
-            logger.error(description)
+            logger.error(srxMessage.description)
             sendToRollbar(logLevel, srxMessage)
           }
       }

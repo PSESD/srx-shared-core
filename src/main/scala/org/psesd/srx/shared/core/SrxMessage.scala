@@ -1,12 +1,10 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.SrxOperation.SrxOperation
-import org.psesd.srx.shared.core.SrxOperationStatus.SrxOperationStatus
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullOrEmptyOrWhitespaceException}
-import org.psesd.srx.shared.core.sif.{SifMessageId, SifTimestamp}
+import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
+import org.psesd.srx.shared.core.sif.{SifContext, SifMessageId, SifTimestamp, SifZone}
 
-import scala.xml.Elem
+import scala.xml.Node
 
 /** Represents a SRX system message.
   *
@@ -14,176 +12,202 @@ import scala.xml.Elem
   * @since 1.0
   * @author David S. Dennison (iTrellis, LLC)
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 object SrxMessage {
 
-  private val messageFields = List(
-    "ServiceName",
-    "ServiceBuild",
-    "MessageId",
-    "Timestamp",
-    "Operation",
-    "Status",
-    "Source",
-    "Destination",
-    "Description",
-    "Body",
-    "SourceIP",
-    "UserAgent"
-  )
+  def apply(service: SrxService, description: String): SrxMessage = new SrxMessage(service, SifMessageId(), SifTimestamp(), description)
 
-  /** Returns an empty `Message` instance */
-  def getEmpty(service: SrxService): SrxMessage = new SrxMessage(None, SifTimestamp(), service, None, None, None, None, None, None, None, None, None)
-
-  def fromString(s: String, srxService: SrxService): SrxMessage = {
-    if (s.isNullOrEmpty) {
-      throw new ArgumentNullOrEmptyOrWhitespaceException("message value")
+  def apply(
+             service: SrxService,
+             resource: Option[String],
+             status: Option[String],
+             studentId: Option[String],
+             description: String,
+             srxRequest: Option[SrxRequest]
+           ): SrxMessage = {
+    val message = new SrxMessage(service, SifMessageId(), SifTimestamp(), description)
+    message.resource = resource
+    message.status = status
+    message.studentId = studentId
+    message.srxRequest = srxRequest
+    if (srxRequest.isDefined) {
+      message.generatorId = srxRequest.get.sifRequest.generatorId
+      message.requestId = srxRequest.get.sifRequest.requestId
+      message.method = Some(srxRequest.get.method)
+      message.zone = Some(srxRequest.get.sifRequest.zone)
+      message.context = Some(srxRequest.get.sifRequest.context)
     }
-
-    if (!isMessage(s)) {
-      throw new ArgumentInvalidException("message value")
-    }
-
-    val mapping: Map[String, String] = mapMessage(s)
-
-    new SrxMessage(
-      Option(SifMessageId(mapping("messageid"))),
-      SifTimestamp(mapping("timestamp")),
-      srxService,
-      Option(SrxOperation.withNameCaseInsensitive(mapping("operation"))),
-      Option(SrxOperationStatus.withNameCaseInsensitive(mapping("status"))),
-      Option(mapping("source")),
-      Option(mapping("destination")),
-      Option(mapping("description")),
-      Option(mapping("body")),
-      Option(mapping("sourceip")),
-      Option(mapping("useragent")),
-      None)
+    message
   }
 
-  def isMessage(s: String): Boolean = {
-
-    if (s.isNullOrEmpty) {
-      false
-    } else {
-      val mapping: Map[String, String] = mapMessage(s)
-
-      if (mapping.isEmpty) {
-        false
-      } else {
-        val hasRequiredFields = messageFields.forall { key =>
-          mapping.contains(key.toLowerCase) && !mapping(key.toLowerCase).isNullOrEmpty
-        }
-
-        if (hasRequiredFields) {
-          val hasValidMessageId = SifMessageId.isValid(mapping("messageid"))
-          val hasValidTimestamp = SifTimestamp.isValid(mapping("timestamp"))
-          val hasServiceName = SifTimestamp.isValid(mapping("serviceName"))
-          val hasServiceBuild = SifTimestamp.isValid(mapping("serviceBuild"))
-
-          hasRequiredFields && hasValidMessageId && hasValidTimestamp && hasServiceName && hasServiceBuild
-        } else {
-          false
-        }
-      }
-    }
+  def apply(
+             service: SrxService,
+             messageId: SifMessageId,
+             timestamp: SifTimestamp,
+             resource: Option[String],
+             method: Option[String],
+             status: Option[String],
+             generatorId: Option[String],
+             requestId: Option[String],
+             zone: Option[SifZone],
+             context: Option[SifContext],
+             studentId: Option[String],
+             description: String,
+             uri: Option[String],
+             userAgent: Option[String],
+             sourceIp: Option[String],
+             headers: Option[String],
+             body: Option[String]
+           ): SrxMessage = {
+    val message = new SrxMessage(service, messageId, timestamp, description)
+    message.resource = resource
+    message.method = method
+    message.status = status
+    message.generatorId = generatorId
+    message.requestId = requestId
+    message.zone = zone
+    message.context = context
+    message.studentId = studentId
+    message.uri = uri
+    message.userAgent = userAgent
+    message.sourceIp = sourceIp
+    message.headers = headers
+    message.body = body
+    message
   }
 
-  def mapMessage(s: String): Map[String, String] = {
-
-    if (s.isNullOrEmpty) {
-      throw new ArgumentNullOrEmptyOrWhitespaceException("value to map")
-    }
-
-    if (!s.contains(',') || !s.contains(':') || s.split(',').length != 10) {
-      Map[String, String]()
-    } else {
-      s.split(',').foldLeft(Map[String, String]()) {
-        (map, value) =>
-
-          val pair: Array[String] = if (value.trim.toLowerCase.startsWith("timestamp: ")) {
-            value.split(": ")
-          } else {
-            value.split(':')
-          }
-
-          pair.length match {
-            case 1 => map + (pair.head.trim.toLowerCase -> "")
-            case 2 => map + (pair.head.trim.toLowerCase -> pair.tail.head.trim)
-            case _ => map
-          }
-      }
-    }
-  }
 }
 
-case class SrxMessage(messageId: Option[SifMessageId],
-                      timestamp: SifTimestamp,
-                      srxService: SrxService,
-                      operation: Option[SrxOperation],
-                      status: Option[SrxOperationStatus],
-                      source: Option[String],
-                      destination: Option[String],
-                      description: Option[String],
-                      body: Option[String],
-                      sourceIp: Option[String],
-                      userAgent: Option[String],
-                      srxRequest: Option[SrxRequest]) {
-
-  /** @return `true` if the current instance is empty; otherwise `false`.
-    * @note 'Empty' means:
-    *       Either MessageId or Timestamp are empty.
-    *       - or -
-    *       The message contains a valid MessageId and Timestamp, but all of its fields are empty.
-    * */
-  def isEmpty: Boolean = {
-    val timestampOp: Option[SifTimestamp] = Option(timestamp).flatMap(Option(_))
-    if (messageId.isEmpty || timestampOp.isEmpty) {
-      true
-    }
-    else {
-      operation.isEmpty &&
-        status.isEmpty &&
-        source.isEmpty &&
-        destination.isEmpty &&
-        description.isEmpty &&
-        body.isEmpty &&
-        sourceIp.isEmpty &&
-        userAgent.isEmpty &&
-        srxRequest.isEmpty
-    }
+class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val timestamp: SifTimestamp, val description: String) {
+  if (srxService == null) {
+    throw new ArgumentNullException("srxService parameter")
+  }
+  if (messageId == null) {
+    throw new ArgumentNullException("contextId parameter")
+  }
+  if (timestamp == null) {
+    throw new ArgumentNullException("contextId parameter")
+  }
+  if (description.isNullOrEmpty) {
+    throw new ArgumentNullOrEmptyOrWhitespaceException("description parameter")
   }
 
-  def toXml: Elem = {
+  var resource: Option[String] = None
+  var method: Option[String] = None
+  var status: Option[String] = None
+  var generatorId: Option[String] = None
+  var requestId: Option[String] = None
+  var zone: Option[SifZone] = None
+  var context: Option[SifContext] = None
+  var studentId: Option[String] = None
+  var uri: Option[String] = None
+  var userAgent: Option[String] = None
+  var sourceIp: Option[String] = None
+  var headers: Option[String] = None
+  var body: Option[String] = None
+  var srxRequest: Option[SrxRequest] = None
+
+  def toXml: Node = {
     <message>
-      <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
+      <messageId>{messageId.toString}</messageId>
       <timestamp>{timestamp.toString}</timestamp>
-      <serviceName>{srxService.service.name}</serviceName>
-      <serviceBuild>{srxService.service.version}</serviceBuild>
-      <messageId>{messageId.getOrElse(SifMessageId().toString)}</messageId>
-      <operation>{operation.getOrElse("None")}</operation>
-      <status>{status.getOrElse("None")}</status>
-      <source>{source.getOrElse("None")}</source>
-      <destination>{destination.getOrElse("None")}</destination>
-      <description>{description.getOrElse("None")}</description>
-      <body>{body.getOrElse("")}</body>
-      <sourceIp>{sourceIp.getOrElse("None")}</sourceIp>
-      <userAgent>{userAgent.getOrElse("None")}</userAgent>
+      <component>{srxService.service.name}</component>
+      <componentVersion>{srxService.service.version}</componentVersion>
+      <resource>{resource.getOrElse("")}</resource>
+      <method>{method.getOrElse("")}</method>
+      <status>{status.getOrElse("")}</status>
+      <generatorId>{getGeneratorId}</generatorId>
+      <requestId>{getRequestId}</requestId>
+      <zoneId>{getZoneId}</zoneId>
+      <contextId>{getContextId}</contextId>
+      <studentId>{studentId.getOrElse("")}</studentId>
+      <description>{description}</description>
+      <uri>{getUri}</uri>
+      <userAgent>{getUserAgent}</userAgent>
+      <sourceIp>{getSourceIp}</sourceIp>
+      <headers>{getHeaders}</headers>
+      <body>{getBody}</body>
     </message>
   }
 
-  override def toString: String = {
-      "MessageId: " + messageId.getOrElse(SifMessageId().toString) +
-      ", Timestamp: " + timestamp.toString +
-      ", ServiceName: " + srxService.service.name +
-      ", ServiceBuild: " + srxService.service.version +
-      ", Operation: " + operation.getOrElse(SrxOperation.None) +
-      ", Status: " + status.getOrElse(SrxOperationStatus.None) +
-      ", Source: " + source.getOrElse("None") +
-      ", Destination: " + destination.getOrElse("None") +
-      ", Description: " + description.getOrElse("None") +
-      ", Body: " + body.getOrElse("") +
-      ", SourceIP: " + sourceIp.getOrElse("None") +
-      ", UserAgent: " + userAgent.getOrElse("None")
+  def getBody: String = {
+    if (body.isEmpty && srxRequest.isDefined && srxRequest.get.sifRequest.body.isDefined) {
+      srxRequest.get.sifRequest.body.get
+    } else {
+      body.getOrElse("")
+    }
   }
+
+  def getContextId: String = {
+    if (context.isDefined) {
+      context.get.toString
+    } else {
+      ""
+    }
+  }
+
+  def getGeneratorId: String = {
+    if (generatorId.isDefined) {
+      generatorId.get
+    } else {
+      ""
+    }
+  }
+
+  def getHeaders: String = {
+    if (headers.isEmpty && srxRequest.isDefined) {
+      val sb = new StringBuilder()
+      var newLine: String = ""
+      for (header <- srxRequest.get.sifRequest.getHeaders) {
+        sb.append("%s%s: %s".format(newLine, header._1, header._2))
+        if (newLine.isEmpty) {
+          newLine = "\r\n"
+        }
+      }
+      sb.toString
+    } else {
+      headers.getOrElse("")
+    }
+  }
+
+  def getRequestId: String = {
+    if (requestId.isDefined) {
+      requestId.get
+    } else {
+      ""
+    }
+  }
+
+  def getSourceIp: String = {
+    if (sourceIp.isEmpty && srxRequest.isDefined) {
+      srxRequest.get.sourceIp
+    } else {
+      sourceIp.getOrElse("")
+    }
+  }
+
+  def getUri: String = {
+    if (uri.isEmpty && srxRequest.isDefined) {
+      srxRequest.get.sifRequest.uri.toString
+    } else {
+      uri.getOrElse("")
+    }
+  }
+
+  def getUserAgent: String = {
+    if (userAgent.isEmpty && srxRequest.isDefined) {
+      srxRequest.get.userAgent
+    } else {
+      userAgent.getOrElse("")
+    }
+  }
+
+  def getZoneId: String = {
+    if (zone.isDefined) {
+      zone.get.toString
+    } else {
+      ""
+    }
+  }
+
 }

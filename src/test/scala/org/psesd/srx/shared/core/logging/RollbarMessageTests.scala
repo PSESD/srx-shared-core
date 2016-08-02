@@ -1,13 +1,13 @@
 package org.psesd.srx.shared.core.logging
 
-import org.psesd.srx.shared.core.{SrxMessage, TestValues}
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ExceptionMessage}
+import org.psesd.srx.shared.core.{SrxMessage, TestValues}
 import org.scalatest.FunSuite
 
 class RollbarMessageTests extends FunSuite {
 
   test("valid message") {
-    val message = new RollbarMessage(SrxMessage.getEmpty(TestValues.srxService), LogLevel.Error).getJsonString()
+    val message = new RollbarMessage(SrxMessage(TestValues.srxService, "test"), LogLevel.Error).getJsonString()
     assert(!message.isEmpty)
     assert(message.startsWith("{\"access_token\""))
   }
@@ -22,7 +22,7 @@ class RollbarMessageTests extends FunSuite {
 
   test("logLevel null") {
     val thrown = intercept[ArgumentNullException] {
-      new RollbarMessage(SrxMessage.getEmpty(TestValues.srxService), null)
+      new RollbarMessage(SrxMessage(TestValues.srxService, "test"), null)
     }
     val expected = ExceptionMessage.NotNull.format("logLevel parameter")
     assert(thrown.getMessage.equals(expected))

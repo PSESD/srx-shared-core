@@ -10,7 +10,6 @@ import org.psesd.srx.shared.core.SrxMessage
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 import org.psesd.srx.shared.core.logging.LogLevel.LogLevel
-import org.psesd.srx.shared.core.sif.SifMessageId
 
 /** Represents a Rollbar item message.
   *
@@ -43,7 +42,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     val version = srxMessage.srxService.service.version
     val itemId = UUID.randomUUID.toString
     val timestamp = Instant.now.getMillis
-    val title = srxMessage.description.getOrElse("None")
+    val title = srxMessage.description
     val messageBody = srxMessage.body.getOrElse("")
     val lowerCaseLevel = logLevel.toString.toLowerCase
 
@@ -64,12 +63,11 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     var method = ""
     var body = ""
     var userIp = ""
-    val srxRequest = message.srxRequest.orNull
-    if (srxRequest != null) {
-      url = srxRequest.sifRequest.uri.toString
-      method = srxRequest.method
-      body = srxRequest.sifRequest.body.getOrElse("")
-      userIp = srxRequest.sourceIp
+    if (message.srxRequest.isDefined) {
+      url = message.srxRequest.get.sifRequest.uri.toString
+      method = message.srxRequest.get.method
+      body = message.srxRequest.get.sifRequest.body.getOrElse("")
+      userIp = message.srxRequest.get.sourceIp
     }
     new request(url, method, HeadersToken, body, userIp)
   }
@@ -77,30 +75,37 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
   private def getItemWithCustomAttributes(message: SrxMessage, itemJson: String): String = {
     // inject custom message keys
     val attributes = new StringBuilder("")
-    attributes.append(",\"message_id\":%s".format(write(message.messageId.getOrElse(SifMessageId()).toString)))
+    attributes.append(",\"message_id\":%s".format(write(message.messageId.toString)))
     attributes.append(",\"timestamp\":%s".format(write(message.timestamp.toString)))
-    attributes.append(",\"operation\":%s".format(write(message.operation.getOrElse("None").toString)))
-    attributes.append(",\"status\":%s".format(write(message.status.getOrElse("None").toString)))
-    attributes.append(",\"source\":%s".format(write(message.source.getOrElse("None"))))
-    attributes.append(",\"destination\":%s".format(write(message.destination.getOrElse("None"))))
-    attributes.append(",\"source_ip\":%s".format(write(message.sourceIp.getOrElse("None"))))
-    attributes.append(",\"user_agent\":%s".format(write(message.userAgent.getOrElse("None"))))
+    attributes.append(",\"component\":%s".format(write(message.srxService.service.name)))
+    attributes.append(",\"component_version\":%s".format(write(message.srxService.service.version)))
+    attributes.append(",\"resource\":%s".format(write(message.resource.getOrElse("").toString)))
+    attributes.append(",\"method\":%s".format(write(message.method.getOrElse("").toString)))
+    attributes.append(",\"status\":%s".format(write(message.status.getOrElse("").toString)))
+    attributes.append(",\"generator_id\":%s".format(write(message.generatorId.getOrElse(""))))
+    attributes.append(",\"request_id\":%s".format(write(message.requestId.getOrElse(""))))
+    attributes.append(",\"zone_id\":%s".format(write(message.getZoneId)))
+    attributes.append(",\"context_id\":%s".format(write(message.getContextId)))
+    attributes.append(",\"student_id\":%s".format(write(message.studentId.getOrElse(""))))
+    attributes.append(",\"user_agent\":%s".format(write(message.userAgent.getOrElse(""))))
+    if(message.srxRequest.isEmpty) {
+      attributes.append(",\"message_body\":%s".format(write(message.body.getOrElse(""))))
+    }
 
-    val srxRequest = message.srxRequest.orNull
-    if (srxRequest != null) {
-      if (srxRequest.errorMessage != null && !srxRequest.errorMessage.isEmpty) {
-        attributes.append(",\"error_message\":%s".format(write(srxRequest.errorMessage)))
+    if (message.srxRequest.isDefined) {
+      if (message.srxRequest.get.errorMessage.isDefined) {
+        attributes.append(",\"error_message\":%s".format(write(message.srxRequest.get.errorMessage.get)))
       }
-      if (srxRequest.errorStackTrace != null && !srxRequest.errorStackTrace.isEmpty) {
-        attributes.append(",\"error_stack_trace\":%s".format(write(srxRequest.errorStackTrace)))
+      if (message.srxRequest.get.errorStackTrace.isDefined) {
+        attributes.append(",\"error_stack_trace\":%s".format(write(message.srxRequest.get.errorStackTrace.get)))
       }
     }
 
     // inject originating request headers
     val headers = new StringBuilder("{")
-    if (srxRequest != null) {
+    if (message.srxRequest.isDefined) {
       var sep = ""
-      for ((key, value) <- srxRequest.sifRequest.getHeaders) {
+      for ((key, value) <- message.srxRequest.get.sifRequest.getHeaders) {
         headers.append("%s%s:%s".format(sep, write(key), write(value)))
         sep = ","
       }

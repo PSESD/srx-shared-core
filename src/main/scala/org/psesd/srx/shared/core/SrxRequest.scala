@@ -25,7 +25,7 @@ class SrxRequest private(val sifRequest: SifRequest) {
     sifRequest.accept.isDefined && sifRequest.accept.orNull.equals(SifContentType.Json)
   }
 
-  val accepts = {
+  val accepts: SifContentType = {
     if (acceptsJson) {
       SifContentType.Json
     } else {
@@ -33,10 +33,7 @@ class SrxRequest private(val sifRequest: SifRequest) {
     }
   }
 
-  var destination = sifRequest.zone.toString
-  var errorMessage = ""
-  var errorStackTrace = ""
-  var method = {
+  val method: String = {
     val requestAction = sifRequest.requestAction.orNull
     if (requestAction == null) {
       ""
@@ -44,9 +41,12 @@ class SrxRequest private(val sifRequest: SifRequest) {
       requestAction.toString
     }
   }
-  var source = sifRequest.generatorId.getOrElse("None")
-  var sourceIp = sifRequest.getHeader(SifHttpHeader.ForwardedFor.toString).getOrElse("None")
-  var userAgent = sifRequest.getHeader(SifHttpHeader.UserAgent.toString).getOrElse("None")
+
+  val sourceIp = sifRequest.getHeader(SifHttpHeader.ForwardedFor.toString).getOrElse("")
+  val userAgent = sifRequest.getHeader(SifHttpHeader.UserAgent.toString).getOrElse("")
+
+  var errorMessage: Option[String] = None
+  var errorStackTrace: Option[String] = None
 }
 
 object SrxRequest {
@@ -154,12 +154,35 @@ object SrxRequest {
     }
   }
 
+  def getHeaderValue(httpRequest: Request, name: String): String = {
+    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
+    if (header == null) {
+      null
+    } else {
+      header.value
+    }
+  }
+
   def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
     val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
     if (header == null) {
       None
     } else {
       Option(header.value)
+    }
+  }
+
+  def getRequestAction(httpRequest: Request): Option[SifRequestAction] = {
+    val requestAction = SifRequestAction.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.RequestAction.toString))
+    if (requestAction.isEmpty) {
+      val action = SifRequestAction.fromHttpMethod(SifHttpRequestMethod.withNameCaseInsensitive(httpRequest.method.name))
+      if (action == null) {
+        None
+      } else {
+        Option(action)
+      }
+    } else {
+      requestAction
     }
   }
 
@@ -174,29 +197,6 @@ object SrxRequest {
     } catch {
       case e: Exception =>
         throw new ArgumentInvalidException("uri resource")
-    }
-  }
-
-  private def getRequestAction(httpRequest: Request): Option[SifRequestAction] = {
-    val requestAction = SifRequestAction.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.RequestAction.toString))
-    if (requestAction.isEmpty) {
-      val action = SifRequestAction.fromHttpMethod(SifHttpRequestMethod.withNameCaseInsensitive(httpRequest.method.name))
-      if (action == null) {
-        None
-      } else {
-        Option(action)
-      }
-    } else {
-      requestAction
-    }
-  }
-
-  private def getHeaderValue(httpRequest: Request, name: String): String = {
-    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
-    if (header == null) {
-      null
-    } else {
-      header.value
     }
   }
 
