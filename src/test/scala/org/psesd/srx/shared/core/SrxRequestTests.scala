@@ -4,6 +4,8 @@ import org.http4s.Header.Raw
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage}
+import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
@@ -71,14 +73,16 @@ class SrxRequestTests extends FunSuite {
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("timestamp header")))
   }
 
-  test("valid request") {
+  test("valid xml request") {
+    val requestBody = "<xml>test body</xml>"
     val httpRequest = new Request(
       method = Method.GET,
       new Uri(None, None, testSrxUri.toString),
       headers = Headers(
         Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
         Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
-      )
+      ),
+      body = requestBody.toEntityBody
     )
     val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
     assert(srxRequest.errorMessage.isEmpty)
@@ -91,20 +95,79 @@ class SrxRequestTests extends FunSuite {
     assert(srxRequest.sifRequest.uri.toString.equals(testSrxUri.toString))
     assert(srxRequest.sifRequest.timestamp.toString.equals(TestValues.timestamp.toString))
     assert(!srxRequest.acceptsJson)
+    assert(srxRequest.getBodyXml.get.toXmlString.equals(requestBody))
   }
 
-  test("accepts Json") {
+  test("valid json request") {
+    val requestBody = "{ \"message\" : { \"messageId\" : \"da9b4078-fdae-4280-bb0c-4feb069c18b6\" } }"
+    val bodyJsonLinux = "{\n  \"message\" : {\n    \"messageId\" : \"da9b4078-fdae-4280-bb0c-4feb069c18b6\"\n  }\n}"
+    val bodyJsonWindows = "{\r\n  \"message\" : {\r\n    \"messageId\" : \"da9b4078-fdae-4280-bb0c-4feb069c18b6\"\r\n  }\r\n}"
     val httpRequest = new Request(
       method = Method.GET,
       new Uri(None, None, testSrxUri.toString),
       headers = Headers(
         Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
         Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
-        Raw(CaseInsensitiveString(SifHeader.Accept.toString), SifContentType.Json.toString)
-      )
+        Raw(CaseInsensitiveString(SifHeader.Accept.toString), SifContentType.Json.toString),
+        Raw(CaseInsensitiveString(SifHttpHeader.ContentType.toString), SifContentType.Json.toString)
+      ),
+      body = requestBody.toEntityBody
     )
     val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
     assert(srxRequest.acceptsJson)
+    val bodyJsonString = srxRequest.getBodyXml.get.toJsonString
+    assert(bodyJsonString.equals(bodyJsonLinux) || bodyJsonString.equals(bodyJsonWindows))
+  }
+
+  test("getBodyXml empty body") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
+      )
+    )
+    val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
+    assert(srxRequest.getBodyXml.isEmpty)
+  }
+
+
+  test("getBodyXml invalid XML body") {
+    val requestBody = "{ \"message\" : { \"messageId\" : \"da9b4078-fdae-4280-bb0c-4feb069c18b6\" } }"
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
+      ),
+      body = requestBody.toEntityBody
+    )
+    val request = SrxRequest(TestValues.sifProvider, httpRequest)
+    val thrown = intercept[ArgumentInvalidException] {
+      request.getBodyXml
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body XML")))
+  }
+
+  test("getBodyXml invalid JSON body") {
+    val requestBody = "<xml>test body</xml>"
+    val httpRequest = new Request(
+      method = Method.GET,
+      new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHttpHeader.ContentType.toString), SifContentType.Json.toString)
+      ),
+      body = requestBody.toEntityBody
+    )
+    val request = SrxRequest(TestValues.sifProvider, httpRequest)
+    val thrown = intercept[ArgumentInvalidException] {
+      request.getBodyXml
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body JSON")))
   }
 
 }

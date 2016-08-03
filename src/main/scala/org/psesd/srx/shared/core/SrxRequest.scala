@@ -10,19 +10,21 @@ import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
 
+import scala.xml.Node
+
 /** Represents incoming SRX requests.
   *
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 class SrxRequest private(val sifRequest: SifRequest) {
   if (sifRequest == null) {
     throw new ArgumentNullException("sifRequest parameter")
   }
 
   val acceptsJson: Boolean = {
-    sifRequest.accept.isDefined && sifRequest.accept.orNull.equals(SifContentType.Json)
+    sifRequest.accept.isDefined && sifRequest.accept.get.equals(SifContentType.Json)
   }
 
   val accepts: SifContentType = {
@@ -47,6 +49,28 @@ class SrxRequest private(val sifRequest: SifRequest) {
 
   var errorMessage: Option[String] = None
   var errorStackTrace: Option[String] = None
+
+  def getBodyXml: Option[Node] = {
+    if (sifRequest.body.isEmpty || sifRequest.body.get.isNullOrEmpty) {
+      None
+    } else {
+      if (sifRequest.contentType.isDefined && sifRequest.contentType.get.equals(SifContentType.Json)) {
+        try {
+          Some(sifRequest.body.get.toJson.toXml)
+        } catch {
+          case e: Exception =>
+            throw new ArgumentInvalidException("request body JSON")
+        }
+      } else {
+        try {
+          Some(sifRequest.body.get.toXml)
+        } catch {
+          case e: Exception =>
+            throw new ArgumentInvalidException("request body XML")
+        }
+      }
+    }
+  }
 }
 
 object SrxRequest {
@@ -154,15 +178,6 @@ object SrxRequest {
     }
   }
 
-  def getHeaderValue(httpRequest: Request, name: String): String = {
-    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
-    if (header == null) {
-      null
-    } else {
-      header.value
-    }
-  }
-
   def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
     val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
     if (header == null) {
@@ -183,6 +198,15 @@ object SrxRequest {
       }
     } else {
       requestAction
+    }
+  }
+
+  def getHeaderValue(httpRequest: Request, name: String): String = {
+    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
+    if (header == null) {
+      null
+    } else {
+      header.value
     }
   }
 

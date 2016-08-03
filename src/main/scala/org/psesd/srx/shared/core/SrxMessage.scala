@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
 
@@ -75,6 +75,49 @@ object SrxMessage {
     message.body = body
     message
   }
+
+  def apply(messageXml: Node): SrxMessage = {
+    val rootElementName = messageXml.label
+    if(rootElementName != "message") {
+      throw new ArgumentInvalidException("root element '%s'".format(rootElementName))
+    }
+    val message = new SrxMessage(
+      new SrxService(
+        new SrxServiceComponent(
+          (messageXml \ "component").textRequired("message.component"),
+          (messageXml \ "componentVersion").textRequired("message.componentVersion")
+        ),
+        List[SrxServiceComponent]()
+      ),
+      SifMessageId((messageXml \ "messageId").textRequired("message.messageId")),
+      SifTimestamp((messageXml \ "timestamp").textRequired("message.timestamp")),
+      (messageXml \ "description").textRequired("message.description")
+    )
+    message.resource = (messageXml \ "resource").textOption
+    message.method = (messageXml \ "method").textOption
+    message.status = (messageXml \ "status").textOption
+    message.generatorId = (messageXml \ "generatorId").textOption
+    message.requestId = (messageXml \ "requestId").textOption
+    val zoneId = (messageXml \ "zoneId").text
+    if(!zoneId.isNullOrEmpty) {
+      message.zone = Some(SifZone(zoneId))
+    }
+    val contextId = (messageXml \ "contextId").text
+    if(!contextId.isNullOrEmpty) {
+      message.context = Some(SifContext(contextId))
+    }
+    message.studentId = (messageXml \ "studentId").textOption
+    message.uri = (messageXml \ "uri").textOption
+    message.userAgent = (messageXml \ "userAgent").textOption
+    message.sourceIp = (messageXml \ "sourceIp").textOption
+    message.headers = (messageXml \ "headers").textOption
+    message.body = (messageXml \ "body").textOption
+    message
+  }
+
+  def fromXmlString(xmlString: String): SrxMessage = SrxMessage(xmlString.toXml)
+
+  def fromJsonString(jsonString: String): SrxMessage = SrxMessage(jsonString.toJson.toXml)
 
 }
 

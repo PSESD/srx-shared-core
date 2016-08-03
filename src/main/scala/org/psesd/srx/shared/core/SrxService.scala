@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyException}
+import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 
 import scala.xml.Node
 
@@ -14,8 +14,8 @@ class SrxService(val service: SrxServiceComponent, val buildComponents: List[Srx
   if (service == null) {
     throw new ArgumentNullException("service parameter")
   }
-  if (buildComponents == null || buildComponents.isEmpty) {
-    throw new ArgumentNullOrEmptyException("buildComponents parameter")
+  if (buildComponents == null) {
+    throw new ArgumentNullException("buildComponents parameter")
   }
 
   def toXml: Node = {
