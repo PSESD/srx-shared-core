@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core
 
 import org.http4s.dsl.{->, /, Root, _}
 import org.http4s.server.blaze.BlazeBuilder
-import org.http4s.server.{Router, ServerApp, ServerBuilder}
+import org.http4s.server.{Router, Server, ServerApp, ServerBuilder}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
@@ -10,6 +10,7 @@ import org.psesd.srx.shared.core.logging.{LogLevel, Logger}
 import org.psesd.srx.shared.core.sif._
 
 import scala.concurrent.ExecutionContext
+import scalaz.concurrent.Task
 
 /** SRX Server base.
   *
@@ -26,7 +27,7 @@ trait SrxServer extends ServerApp {
 
   private val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
   private val serverHost = Environment.getPropertyOrElse(ServerHostKey, ServerBuilder.DefaultHost)
-  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "")).toInt
+  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "0")).toInt
 
   def sifProvider: SifProvider
 
@@ -34,6 +35,7 @@ trait SrxServer extends ServerApp {
 
   def server(args: List[String]) = {
     try {
+      Logger.log(LogLevel.Debug, "Starting server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost), srxService)
       BlazeBuilder
         .bindHttp(serverPort, serverHost)
         .mountService(service, serverApiRoot)
@@ -43,6 +45,15 @@ trait SrxServer extends ServerApp {
         Logger.log(LogLevel.Error, e.getMessage, srxService)
         null
     }
+  }
+
+  override def shutdown(server: Server): Task[Unit] = {
+    try {
+      Logger.log(LogLevel.Debug, "Stopping server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost), srxService)
+    } catch {
+      case e: Exception =>
+    }
+    super.shutdown(server)
   }
 
   def service(implicit executionContext: ExecutionContext = ExecutionContext.global): HttpService = Router(
