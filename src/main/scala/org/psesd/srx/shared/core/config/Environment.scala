@@ -50,6 +50,8 @@ object Environment {
     result
   }
 
+  def isLocal: Boolean = name.equals(Local)
+
   private def getFileProperty(key: String): String = {
     if (properties == null) {
       loadProperties(LocalEnvironmentFileName)
