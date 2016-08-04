@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core
 
 import org.http4s.dsl.{->, /, Root, _}
 import org.http4s.server.blaze.BlazeBuilder
-import org.http4s.server.{Router, ServerApp}
+import org.http4s.server.{Router, ServerApp, ServerBuilder}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
@@ -20,10 +20,12 @@ import scala.concurrent.ExecutionContext
 trait SrxServer extends ServerApp {
 
   private final val ServerApiRootKey = "SERVER_API_ROOT"
+  private final val ServerHostKey = "SERVER_HOST"
   private final val ServerPortKey = "SERVER_PORT"
   private final val ServerPortAlternateKey = "PORT"
 
   private val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
+  private val serverHost = Environment.getPropertyOrElse(ServerHostKey, ServerBuilder.DefaultHost)
   private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "")).toInt
 
   def sifProvider: SifProvider
@@ -33,7 +35,7 @@ trait SrxServer extends ServerApp {
   def server(args: List[String]) = {
     try {
       BlazeBuilder
-        .bindHttp(serverPort)
+        .bindHttp(serverPort, serverHost)
         .mountService(service, serverApiRoot)
         .start
     } catch {
