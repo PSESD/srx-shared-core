@@ -25,7 +25,7 @@ class SrxServerTests extends FunSuite {
     override def initialValue = Nil
   }
 
-  private val tempServer = Future {
+  private lazy val tempServer = Future {
     delayedInterrupt(ServerDuration)
     intercept[InterruptedException] {
       startServer()
@@ -179,7 +179,9 @@ class SrxServerTests extends FunSuite {
   }
 
   private def startServer(): Unit = {
-    srxServer.main(Array[String]())
+    if(Environment.isLocal) {
+      srxServer.main(Array[String]())
+    }
   }
 
   private def printlnResponse(response: SifResponse): Unit = {
