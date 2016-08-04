@@ -21,8 +21,10 @@ trait SrxServer extends ServerApp {
 
   private final val ServerApiRootKey = "SERVER_API_ROOT"
   private final val ServerPortKey = "SERVER_PORT"
+  private final val ServerPortAlternateKey = "PORT"
 
   private val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
+  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "")).toInt
 
   def sifProvider: SifProvider
 
@@ -31,7 +33,7 @@ trait SrxServer extends ServerApp {
   def server(args: List[String]) = {
     try {
       BlazeBuilder
-        .bindHttp(Environment.getProperty(ServerPortKey).toInt)
+        .bindHttp(serverPort)
         .mountService(service, serverApiRoot)
         .start
     } catch {
