@@ -6,6 +6,7 @@ import org.http4s.server.{Router, Server, ServerApp, ServerBuilder}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.logging.{LogLevel, Logger}
 import org.psesd.srx.shared.core.sif._
 
@@ -33,27 +34,23 @@ trait SrxServer extends ServerApp {
 
   def srxService: SrxService
 
-  def server(args: List[String]) = {
+  def server(args: List[String]): Task[Server] = {
     try {
-      Logger.log(LogLevel.Debug, "Starting server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost), srxService)
+      Logger.log(
+        LogLevel.Info,
+        "Starting SRX server.",
+        "Starting server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost),
+        srxService
+      )
       BlazeBuilder
         .bindHttp(serverPort, serverHost)
         .mountService(service, serverApiRoot)
         .start
     } catch {
       case e: Exception =>
-        Logger.log(LogLevel.Error, e.getMessage, srxService)
+        Logger.log(LogLevel.Error, e.getMessage, e.getFormattedStackTrace, srxService)
         null
     }
-  }
-
-  override def shutdown(server: Server): Task[Unit] = {
-    try {
-      Logger.log(LogLevel.Debug, "Stopping server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost), srxService)
-    } catch {
-      case e: Exception =>
-    }
-    super.shutdown(server)
   }
 
   def service(implicit executionContext: ExecutionContext = ExecutionContext.global): HttpService = Router(

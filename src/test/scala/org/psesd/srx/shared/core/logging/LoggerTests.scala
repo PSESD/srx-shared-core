@@ -6,11 +6,15 @@ import org.scalatest.FunSuite
 class LoggerTests extends FunSuite {
 
   test("null level string") {
-    Logger.log(null, "Test local log string.", TestValues.srxService)
+    Logger.log(null, "Test local log string.", "Test local log description", TestValues.srxService)
   }
 
-  test("null message string") {
-    Logger.log(LogLevel.Local, "", TestValues.srxService)
+  test("empty message string") {
+    Logger.log(LogLevel.Local, "", "", TestValues.srxService)
+  }
+
+  test("null description string") {
+    Logger.log(LogLevel.Local, "Test local log string.", null, TestValues.srxService)
   }
 
   test("null srxMessage") {
@@ -18,7 +22,7 @@ class LoggerTests extends FunSuite {
   }
 
   test("log local string") {
-    Logger.log(LogLevel.Local, "Test local log string.", TestValues.srxService)
+    Logger.log(LogLevel.Local, "Test local log string.", "Test local log description", TestValues.srxService)
   }
 
   test("log local message") {
@@ -26,8 +30,8 @@ class LoggerTests extends FunSuite {
   }
 
   ignore("log debug message") {
-    val description = "srx-shared-core test message"
-    val srxMessage = SrxMessage(TestValues.srxService, description)
+    val message = "srx-shared-core test message"
+    val srxMessage = SrxMessage(TestValues.srxService, message)
     Logger.log(LogLevel.Debug, srxMessage)
   }
 

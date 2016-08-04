@@ -1,5 +1,6 @@
 package org.psesd.srx.shared.core.extensions
 
+import java.io.{PrintWriter, StringWriter}
 import java.util.UUID
 
 import org.json4s.JValue
@@ -20,6 +21,17 @@ object TypeExtensions {
   implicit class ArrayExtensions[T](val a: Array[T]) {
 
     def isNullOrEmpty: Boolean = Option(a).isEmpty || a.isEmpty
+
+  }
+
+  implicit class ExceptionExtensions[T](val e: Exception) {
+
+    def getFormattedStackTrace: String = {
+      val sw = new StringWriter
+      val pw = new PrintWriter(sw)
+      e.printStackTrace(pw)
+      sw.toString
+    }
 
   }
 
@@ -70,6 +82,17 @@ object TypeExtensions {
       } else {
         s
       }
+    }
+
+  }
+
+  implicit class ThrowableExtensions[T](val t: Throwable) {
+
+    def getFormattedStackTrace: String = {
+      val sw = new StringWriter
+      val pw = new PrintWriter(sw)
+      t.printStackTrace(pw)
+      sw.toString
     }
 
   }

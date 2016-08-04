@@ -21,7 +21,7 @@ object Logger {
   private final val logLevel = getLogLevel
   private final val logger = getLogger
 
-  def log(level: LogLevel, message: String, service: SrxService): Unit = {
+  def log(level: LogLevel, message: String, description: String, service: SrxService): Unit = {
     try {
       if (level == null) {
         throw new ArgumentNullException("level parameter")
@@ -31,7 +31,12 @@ object Logger {
         throw new ArgumentNullOrEmptyOrWhitespaceException("message parameter")
       }
 
+      if (description == null) {
+        throw new ArgumentNullException("description parameter")
+      }
+
       val srxMessage = SrxMessage(service, message)
+      srxMessage.body = Some(description)
 
       log(level, srxMessage)
     } catch {
