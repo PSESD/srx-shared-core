@@ -77,6 +77,9 @@ object SrxMessage {
   }
 
   def apply(messageXml: Node): SrxMessage = {
+    if (messageXml == null) {
+      throw new ArgumentNullException("messageXml parameter")
+    }
     val rootElementName = messageXml.label
     if(rootElementName != "message") {
       throw new ArgumentInvalidException("root element '%s'".format(rootElementName))

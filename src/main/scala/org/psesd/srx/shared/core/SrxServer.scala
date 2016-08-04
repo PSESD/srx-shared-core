@@ -6,6 +6,7 @@ import org.http4s.server.{Router, ServerApp}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
+import org.psesd.srx.shared.core.logging.{LogLevel, Logger}
 import org.psesd.srx.shared.core.sif._
 
 import scala.concurrent.ExecutionContext
@@ -27,10 +28,18 @@ trait SrxServer extends ServerApp {
 
   def srxService: SrxService
 
-  def server(args: List[String]) = BlazeBuilder
-    .bindHttp(Environment.getProperty(ServerPortKey).toInt)
-    .mountService(service, serverApiRoot)
-    .start
+  def server(args: List[String]) = {
+    try {
+      BlazeBuilder
+        .bindHttp(Environment.getProperty(ServerPortKey).toInt)
+        .mountService(service, serverApiRoot)
+        .start
+    } catch {
+      case e: Exception =>
+        Logger.log(LogLevel.Error, e.getMessage, srxService)
+        null
+    }
+  }
 
   def service(implicit executionContext: ExecutionContext = ExecutionContext.global): HttpService = Router(
     "" -> serviceRouter
