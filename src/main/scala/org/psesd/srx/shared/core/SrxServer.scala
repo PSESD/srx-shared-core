@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core
 
 import org.http4s.dsl.{->, /, Root, _}
 import org.http4s.server.blaze.BlazeBuilder
-import org.http4s.server.{Router, Server, ServerApp, ServerBuilder}
+import org.http4s.server.{Router, Server, ServerApp}
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
@@ -18,7 +18,7 @@ import scalaz.concurrent.Task
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 trait SrxServer extends ServerApp {
 
   private final val ServerApiRootKey = "SERVER_API_ROOT"
@@ -26,15 +26,15 @@ trait SrxServer extends ServerApp {
   private final val ServerPortKey = "SERVER_PORT"
   private final val ServerPortAlternateKey = "PORT"
 
-  private val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
-  private val serverHost = Environment.getPropertyOrElse(ServerHostKey, ServerBuilder.DefaultHost)
-  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "80")).toInt
-
   def sifProvider: SifProvider
 
   def srxService: SrxService
 
   def server(args: List[String]): Task[Server] = {
+    val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
+    val serverHost = Environment.getPropertyOrElse(ServerHostKey, "0.0.0.0")
+    val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "8080")).toInt
+
     try {
       Logger.log(
         LogLevel.Info,
