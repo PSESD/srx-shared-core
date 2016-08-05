@@ -36,6 +36,7 @@ trait SrxServer extends ServerApp {
 
   def server(args: List[String]): Task[Server] = {
     try {
+      logArgs(args)
       setEnvironmentVariables()
 
       Logger.log(
@@ -134,21 +135,35 @@ trait SrxServer extends ServerApp {
     srxResponse
   }
 
+  private def logArgs(args: List[String]): Unit = {
+    val sb = new StringBuilder
+    sb.append("ARGS:")
+    for(a <- args) {
+      sb.append(" " + a + ";")
+    }
+    Logger.log(
+      LogLevel.Debug,
+      "SRX server args received.",
+      sb.toString,
+      srxService
+    )
+  }
+
   private def setEnvironmentVariables(): Unit = {
     serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
     serverHost = Environment.getPropertyOrElse(ServerHostKey, "0.0.0.0")
     serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "8080"))
 
-    val Undefined = "[UNDEFINED]; "
+    val Undefined = "[UNDEFINED]"
     val sb = new StringBuilder
     sb.append("RECEIVED: ")
-    sb.append(ServerPortAlternateKey + "=" + Environment.getPropertyOrElse(ServerPortAlternateKey, Undefined))
-    sb.append(ServerApiRootKey + "=" + Environment.getPropertyOrElse(ServerApiRootKey, Undefined))
-    sb.append(ServerHostKey + "=" + Environment.getPropertyOrElse(ServerHostKey, Undefined))
-    sb.append(ServerPortKey + "=" + Environment.getPropertyOrElse(ServerPortKey, Undefined))
+    sb.append(ServerPortAlternateKey + "=" + Environment.getPropertyOrElse(ServerPortAlternateKey, Undefined) + "; ")
+    sb.append(ServerApiRootKey + "=" + Environment.getPropertyOrElse(ServerApiRootKey, Undefined) + "; ")
+    sb.append(ServerHostKey + "=" + Environment.getPropertyOrElse(ServerHostKey, Undefined) + "; ")
+    sb.append(ServerPortKey + "=" + Environment.getPropertyOrElse(ServerPortKey, Undefined) + ";")
     sb.append("\r\nUSING: ")
-    sb.append(ServerApiRootKey + "=" + serverApiRoot + ";")
-    sb.append(ServerHostKey + "=" + serverHost + ";")
+    sb.append(ServerApiRootKey + "=" + serverApiRoot + "; ")
+    sb.append(ServerHostKey + "=" + serverHost + "; ")
     sb.append(ServerPortKey + "=" + serverPort + ";")
 
     Logger.log(
