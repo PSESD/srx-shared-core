@@ -26,24 +26,26 @@ trait SrxServer extends ServerApp {
   private final val ServerPortKey = "SERVER_PORT"
   private final val ServerPortAlternateKey = "PORT"
 
+  private var serverApiRoot: String = _
+  private var serverHost: String = _
+  private var serverPort: String = _
+
   def sifProvider: SifProvider
 
   def srxService: SrxService
 
   def server(args: List[String]): Task[Server] = {
-    val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
-    val serverHost = Environment.getPropertyOrElse(ServerHostKey, "0.0.0.0")
-    val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "8080")).toInt
-
     try {
+      setEnvironmentVariables()
+
       Logger.log(
         LogLevel.Info,
         "Starting SRX server.",
-        "Starting server %s on port %s at address %s".format(srxService.service.name, serverPort.toString, serverHost),
+        "Starting server %s on port %s at address %s (apiRoot=%s)".format(srxService.service.name, serverPort, serverHost, serverApiRoot),
         srxService
       )
       BlazeBuilder
-        .bindHttp(serverPort, serverHost)
+        .bindHttp(serverPort.toInt, serverHost)
         .mountService(service, serverApiRoot)
         .start
     } catch {
@@ -130,6 +132,32 @@ trait SrxServer extends ServerApp {
       }
     }
     srxResponse
+  }
+
+  private def setEnvironmentVariables(): Unit = {
+    serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
+    serverHost = Environment.getPropertyOrElse(ServerHostKey, "0.0.0.0")
+    serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "8080"))
+
+    val Undefined = "[UNDEFINED]; "
+    val sb = new StringBuilder
+    sb.append("RECEIVED: ")
+    sb.append(ServerPortAlternateKey + "=" + Environment.getPropertyOrElse(ServerPortAlternateKey, Undefined))
+    sb.append(ServerApiRootKey + "=" + Environment.getPropertyOrElse(ServerApiRootKey, Undefined))
+    sb.append(ServerHostKey + "=" + Environment.getPropertyOrElse(ServerHostKey, Undefined))
+    sb.append(ServerPortKey + "=" + Environment.getPropertyOrElse(ServerPortKey, Undefined))
+    sb.append("\r\nUSING: ")
+    sb.append(ServerApiRootKey + "=" + serverApiRoot + ";")
+    sb.append(ServerHostKey + "=" + serverHost + ";")
+    sb.append(ServerPortKey + "=" + serverPort + ";")
+
+    Logger.log(
+      LogLevel.Debug,
+      "SRX server environment variables set.",
+      sb.toString,
+      srxService
+    )
+
   }
 
 }

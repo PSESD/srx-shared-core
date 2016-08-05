@@ -19,15 +19,19 @@ object Logger {
   private final val LogLevelKey = "LOG_LEVEL"
 
   private final val logLevel = getLogLevel
-  private final val logger = getLogger
+  private var logger: Logger = _
 
-  def log(level: LogLevel, message: String, description: String, service: SrxService): Unit = {
+  def init(c: Class[_]): Unit = {
+    logger = getLogger(c)
+  }
+
+  def log(level: LogLevel, subject: String, description: String, service: SrxService): Unit = {
     try {
       if (level == null) {
         throw new ArgumentNullException("level parameter")
       }
 
-      if (message == null || message.isEmpty) {
+      if (subject == null || subject.isEmpty) {
         throw new ArgumentNullOrEmptyOrWhitespaceException("message parameter")
       }
 
@@ -35,13 +39,17 @@ object Logger {
         throw new ArgumentNullException("description parameter")
       }
 
-      val srxMessage = SrxMessage(service, message)
+      val srxMessage = SrxMessage(service, subject)
       srxMessage.body = Some(description)
 
       log(level, srxMessage)
     } catch {
       case e: Exception =>
-        logger.error(e.getMessage)
+        if(logger == null) {
+          println(e.getMessage)
+        } else {
+          logger.error(e.getMessage)
+        }
     }
   }
 
@@ -55,22 +63,36 @@ object Logger {
         throw new ArgumentNullException("srxMessage parameter")
       }
 
+      val logMessage: String = getLogMessage(srxMessage)
+
       level match {
         case Local =>
           if (logLevel == LogLevel.Local) {
-            logger.debug(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.debug(logMessage)
+            }
           }
 
         case Debug =>
           if (logLevel == LogLevel.Debug) {
-            logger.debug(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.debug(logMessage)
+            }
             sendToRollbar(logLevel, srxMessage)
           }
 
         case Info =>
           if (logLevel == LogLevel.Debug
             || logLevel == LogLevel.Info) {
-            logger.info(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.info(logMessage)
+            }
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -78,7 +100,11 @@ object Logger {
           if (logLevel == LogLevel.Debug
             || logLevel == LogLevel.Info
             || logLevel == LogLevel.Warning) {
-            logger.warn(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.warn(logMessage)
+            }
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -87,7 +113,11 @@ object Logger {
             || logLevel == LogLevel.Info
             || logLevel == LogLevel.Warning
             || logLevel == LogLevel.Error) {
-            logger.error(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.error(logMessage)
+            }
             sendToRollbar(logLevel, srxMessage)
           }
 
@@ -97,13 +127,21 @@ object Logger {
             || logLevel == LogLevel.Warning
             || logLevel == LogLevel.Error
             || logLevel == LogLevel.Critical) {
-            logger.error(srxMessage.description)
+            if(logger == null) {
+              println(logMessage)
+            } else {
+              logger.error(logMessage)
+            }
             sendToRollbar(logLevel, srxMessage)
           }
       }
     } catch {
       case e: Exception =>
-        logger.error(e.getMessage)
+        if(logger == null) {
+          println(e.getMessage)
+        } else {
+          logger.error(e.getMessage)
+        }
     }
   }
 
@@ -123,12 +161,30 @@ object Logger {
     }
   }
 
-  private def getLogger: Logger = {
+  private def getLogger(c: Class[_]): Logger = {
     System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, logLevel.toString.toUpperCase)
-    LoggerFactory.getLogger(LoggerName)
+    LoggerFactory.getLogger(c)
   }
 
   private def getLogLevel: LogLevel = {
     LogLevel.withNameCaseInsensitive(Environment.getProperty(LogLevelKey))
+  }
+
+  private def getLogMessage(srxMessage: SrxMessage): String = {
+    val subject: String = {
+      if(srxMessage.description.endsWith(".")) {
+        srxMessage.description
+      } else {
+        srxMessage.description + "."
+      }
+    }
+    val description: String = {
+      if(srxMessage.body.isDefined) {
+        " " + srxMessage.body.get
+      } else {
+        ""
+      }
+    }
+    srxMessage.srxService.service.name + " v" + srxMessage.srxService.service.version + ": " + subject + description
   }
 }
