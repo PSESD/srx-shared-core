@@ -28,7 +28,7 @@ trait SrxServer extends ServerApp {
 
   private val serverApiRoot = Environment.getPropertyOrElse(ServerApiRootKey, "")
   private val serverHost = Environment.getPropertyOrElse(ServerHostKey, ServerBuilder.DefaultHost)
-  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "0")).toInt
+  private val serverPort = Environment.getPropertyOrElse(ServerPortAlternateKey, Environment.getPropertyOrElse(ServerPortKey, "80")).toInt
 
   def sifProvider: SifProvider
 

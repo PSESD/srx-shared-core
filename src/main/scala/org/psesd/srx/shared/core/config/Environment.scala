@@ -4,6 +4,8 @@ import java.io.{File, FileInputStream}
 
 import org.psesd.srx.shared.core.exceptions.EnvironmentException
 
+import scala.util.Properties
+
 /** Provides environment variable functions shared by SRX components and services.
   *
   * @version 1.0
@@ -21,8 +23,8 @@ object Environment {
   private final val EnvironmentKey = "ENVIRONMENT"
   private final val LocalEnvironmentFileName = "env-local.properties"
 
-  private var envName: String = null
-  private var properties: java.util.Properties = null
+  private var envName: String = _
+  private var properties: java.util.Properties = _
 
   val name: String = {
     if(envName == null) {
@@ -40,7 +42,7 @@ object Environment {
   }
 
   def getPropertyOrElse(key: String, default: String): String = {
-    var result = sys.env.getOrElse(key, null)
+    var result = Properties.envOrElse(key, null)
     if (result == null && (envName == null || envName == Local)) {
       result = getFileProperty(key)
     }
