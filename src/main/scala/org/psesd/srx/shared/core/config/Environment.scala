@@ -3,6 +3,7 @@ package org.psesd.srx.shared.core.config
 import java.io.{File, FileInputStream}
 
 import org.psesd.srx.shared.core.exceptions.EnvironmentException
+import org.psesd.srx.shared.core.sif._
 
 import scala.util.Properties
 
@@ -16,9 +17,18 @@ object Environment {
   final val Development = "development"
   final val Local = "local"
 
-  final val EnvironmentProviderSessionTokenKey = "ENVIRONMENT_PROVIDER_SESSION_TOKEN"
-  final val EnvironmentProviderSharedSecretKey = "ENVIRONMENT_PROVIDER_SHARED_SECRET"
-  final val EnvironmentProviderUrlKey = "ENVIRONMENT_PROVIDER_URL"
+  final val EnvironmentProviderUrlKey = "SRX_ENVIRONMENT_URL"
+  final val SrxAdminSessionTokenKey = "SRX_ADMIN_SESSION_TOKEN"
+  final val SrxAdminSharedSecretKey = "SRX_ADMIN_SHARED_SECRET"
+
+  lazy val environmentProviderUrl = SifProviderUrl(getProperty(EnvironmentProviderUrlKey))
+
+  lazy val srxAdminProvider = new SifProvider(
+    environmentProviderUrl,
+    SifProviderSessionToken(getProperty(SrxAdminSessionTokenKey)),
+    SifProviderSharedSecret(getProperty(SrxAdminSharedSecretKey)),
+    SifAuthenticationMethod.SifHmacSha256
+  )
 
   private final val EnvironmentKey = "ENVIRONMENT"
   private final val LocalEnvironmentFileName = "env-local.properties"
