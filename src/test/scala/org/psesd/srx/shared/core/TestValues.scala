@@ -19,6 +19,6 @@ object TestValues {
     new SrxServiceComponent("sbt", "0.13.12")
   )
 
-  val srxService = new SrxService(new SrxServiceComponent("srx-shared-core", "1.0.1"), srxServiceBuildComponents)
+  val srxService = new SrxService(new SrxServiceComponent("srx-shared-core-test", "1.0.1"), srxServiceBuildComponents)
 
 }
