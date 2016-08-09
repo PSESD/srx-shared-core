@@ -15,7 +15,7 @@ object SrxMessageService {
   private final val SrxMessageResourceUri = "SrxMessage"
 
   def createMessage(generatorId: String, srxMessage: SrxMessage): SifResponse = {
-    val sifRequest = new SifRequest(Environment.srxAdminProvider, SrxMessageResourceUri)
+    val sifRequest = new SifRequest(Environment.srxProvider, SrxMessageResourceUri)
     sifRequest.requestId = Some(SifMessageId().toString)
     sifRequest.generatorId = Some(generatorId)
     sifRequest.contentType = Some(SifContentType.Json)

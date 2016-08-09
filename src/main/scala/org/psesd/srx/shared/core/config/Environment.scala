@@ -17,16 +17,16 @@ object Environment {
   final val Development = "development"
   final val Local = "local"
 
-  final val EnvironmentProviderUrlKey = "SRX_ENVIRONMENT_URL"
-  final val SrxAdminSessionTokenKey = "SRX_ADMIN_SESSION_TOKEN"
-  final val SrxAdminSharedSecretKey = "SRX_ADMIN_SHARED_SECRET"
+  final val SrxEnvironmentUrlKey = "SRX_ENVIRONMENT_URL"
+  final val SrxSessionTokenKey = "SRX_SESSION_TOKEN"
+  final val SrxSharedSecretKey = "SRX_SHARED_SECRET"
 
-  lazy val environmentProviderUrl = SifProviderUrl(getProperty(EnvironmentProviderUrlKey))
+  lazy val srxEnvironmentUrl = SifProviderUrl(getProperty(SrxEnvironmentUrlKey))
 
-  lazy val srxAdminProvider = new SifProvider(
-    environmentProviderUrl,
-    SifProviderSessionToken(getProperty(SrxAdminSessionTokenKey)),
-    SifProviderSharedSecret(getProperty(SrxAdminSharedSecretKey)),
+  lazy val srxProvider = new SifProvider(
+    srxEnvironmentUrl,
+    SifProviderSessionToken(getProperty(SrxSessionTokenKey)),
+    SifProviderSharedSecret(getProperty(SrxSharedSecretKey)),
     SifAuthenticationMethod.SifHmacSha256
   )
 

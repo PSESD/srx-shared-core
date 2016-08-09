@@ -5,17 +5,8 @@ import org.scalatest.FunSuite
 
 class SifConsumerTests extends FunSuite {
 
-  private final val EarsSessionTokenKey = "SRX_EARS_SESSION_TOKEN"
-  private final val EarsSharedSecretKey = "SRX_EARS_SHARED_SECRET"
-
-  private lazy val earsSessionToken = SifProviderSessionToken(Environment.getProperty(EarsSessionTokenKey))
-  private lazy val earsSharedSecret =SifProviderSharedSecret(Environment.getProperty(EarsSharedSecretKey))
-
-  private lazy val earsProvider = new SifProvider(
-    Environment.environmentProviderUrl,
-    earsSessionToken,
-    earsSharedSecret,
-    SifAuthenticationMethod.SifHmacSha256)
+  private lazy val srxSessionToken = SifProviderSessionToken(Environment.getProperty(Environment.SrxSessionTokenKey))
+  private lazy val srxSharedSecret =SifProviderSharedSecret(Environment.getProperty(Environment.SrxSharedSecretKey))
 
   ignore("query invalid uri") {
     // ignoring in build environment due to expected long runtime (30 second connection timeout)
@@ -45,8 +36,8 @@ class SifConsumerTests extends FunSuite {
   test("query not https") {
     val provider = new SifProvider(
       SifProviderUrl("http://psesd.hostedzone.com/svcs/dev/requestProvider"),
-      earsSessionToken,
-      earsSharedSecret,
+      srxSessionToken,
+      srxSharedSecret,
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
     val response = new SifConsumer().query(sifRequest)
@@ -56,9 +47,9 @@ class SifConsumerTests extends FunSuite {
 
   test("query invalid session token") {
     val provider = new SifProvider(
-      Environment.environmentProviderUrl,
+      Environment.srxEnvironmentUrl,
       SifProviderSessionToken("test"),
-      earsSharedSecret,
+      srxSharedSecret,
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
     val response = new SifConsumer().query(sifRequest)
@@ -68,8 +59,8 @@ class SifConsumerTests extends FunSuite {
 
   test("query invalid shared secret") {
     val provider = new SifProvider(
-      Environment.environmentProviderUrl,
-      earsSessionToken,
+      Environment.srxEnvironmentUrl,
+      srxSessionToken,
       SifProviderSharedSecret("test"),
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
@@ -79,7 +70,7 @@ class SifConsumerTests extends FunSuite {
   }
 
   test("query invalid resource") {
-    val sifRequest = new SifRequest(earsProvider, "invalid_resource")
+    val sifRequest = new SifRequest(Environment.srxProvider, "invalid_resource")
     val response = new SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(404))
     assert(response.body.get.contains("Service[invalid_resource] not found"))
@@ -136,7 +127,7 @@ class SifConsumerTests extends FunSuite {
     val requestAction = SifRequestAction.Query
     val requestType = SifRequestType.Immediate
 
-    val sifRequest = new SifRequest(earsProvider, "filters", SifZone("test"))
+    val sifRequest = new SifRequest(Environment.srxProvider, "filters", SifZone("test"))
     sifRequest.requestId = Option(requestId)
     sifRequest.serviceType = Option(serviceType)
     sifRequest.accept = Option(accept)
@@ -168,7 +159,7 @@ class SifConsumerTests extends FunSuite {
     val requestAction = SifRequestAction.Query
     val requestType = SifRequestType.Immediate
 
-    val sifRequest = new SifRequest(earsProvider, "xSres/sample1", SifZone("seattle"))
+    val sifRequest = new SifRequest(Environment.srxProvider, "xSres/sample1", SifZone("seattle"))
     sifRequest.requestId = Option(requestId)
     sifRequest.serviceType = Option(serviceType)
     sifRequest.accept = Option(accept)
@@ -194,7 +185,7 @@ class SifConsumerTests extends FunSuite {
     val requestAction = SifRequestAction.Query
     val requestType = SifRequestType.Immediate
 
-    val sifRequest = new SifRequest(earsProvider, "xSres/notfound", SifZone("seattle"))
+    val sifRequest = new SifRequest(Environment.srxProvider, "xSres/notfound", SifZone("seattle"))
     sifRequest.requestId = Option(requestId)
     sifRequest.serviceType = Option(serviceType)
     sifRequest.accept = Option(accept)
