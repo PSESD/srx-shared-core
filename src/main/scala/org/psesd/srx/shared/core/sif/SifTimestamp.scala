@@ -11,6 +11,9 @@ import org.psesd.srx.shared.core.exceptions.ArgumentInvalidException
   * @author Stephen Pugmire (iTrellis, LLC)
   */
 case class SifTimestamp(dateTime: DateTime) {
+
+  var originalString: Option[String] = None
+
   override def toString: String = {
     ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC).print(dateTime)
   }
@@ -18,12 +21,25 @@ case class SifTimestamp(dateTime: DateTime) {
   def getMilliseconds: Long = {
     dateTime.getMillis
   }
+
+  def getOriginalString: String = {
+    if(originalString.isDefined) {
+      originalString.get
+    } else {
+      toString
+    }
+  }
+
 }
 
 object SifTimestamp {
   def apply(): SifTimestamp = new SifTimestamp(DateTime.now(DateTimeZone.UTC))
 
-  def apply(dateTime: String): SifTimestamp = new SifTimestamp(getDateTime(dateTime))
+  def apply(dateTime: String): SifTimestamp = {
+    val timestamp = new SifTimestamp(getDateTime(dateTime))
+    timestamp.originalString = Some(dateTime)
+    timestamp
+  }
 
   private def getDateTime(dateTime: String) = {
     if (!isValid(dateTime)) {

@@ -125,7 +125,7 @@ object SifEncryptor {
       throw new ArgumentNullException("timestamp parameter")
     }
 
-    val plaintext = (provider.sessionToken.toString.trim + ":" + timestamp.toString.trim).getBytes
+    val plaintext = (provider.sessionToken.toString.trim + ":" + timestamp.getOriginalString.trim).getBytes
 
     val spec = "HmacSHA256"
     val mac = Mac.getInstance(spec)

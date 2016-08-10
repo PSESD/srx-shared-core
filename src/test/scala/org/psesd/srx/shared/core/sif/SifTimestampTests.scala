@@ -53,4 +53,12 @@ class SifTimestampTests extends FunSuite {
     assert(!SifTimestamp.isValid(value))
   }
 
+  test("getString") {
+    val timestamp = SifTimestamp("2016-08-09T03:00:34.938661Z")
+    val expected = "2016-08-09T03:00:34.938661Z"
+    val actual = timestamp.getOriginalString
+    assert(actual.equals(expected))
+  }
+
+
 }
