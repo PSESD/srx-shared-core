@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core.sif
 
 import org.psesd.srx.shared.core.config.Environment
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SifConsumerTests extends FunSuite {
@@ -16,7 +17,7 @@ class SifConsumerTests extends FunSuite {
       SifProviderSharedSecret("INVALID"),
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "invalid_resource")
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.exceptions(0).getMessage.startsWith("Connect to hostedzone.com:443") && response.exceptions(0).getMessage.contains("failed"))
   }
 
@@ -27,7 +28,7 @@ class SifConsumerTests extends FunSuite {
       SifProviderSharedSecret("INVALID"),
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "invalid_resource")
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(404))
     assert(response.body.get.contains("The requested resource is not available"))
     assert(response.exceptions(0).getMessage.equals("Response contains invalid Content-Type: 'text/html;charset=utf-8'."))
@@ -40,7 +41,7 @@ class SifConsumerTests extends FunSuite {
       srxSharedSecret,
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(400))
     assert(response.body.get.contains("Call MUST be SSL"))
   }
@@ -52,7 +53,7 @@ class SifConsumerTests extends FunSuite {
       srxSharedSecret,
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(401))
     assert(response.body.get.contains("Environment with sessionId[test] does not exist"))
   }
@@ -64,14 +65,14 @@ class SifConsumerTests extends FunSuite {
       SifProviderSharedSecret("test"),
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(401))
     assert(response.body.get.contains("Bad credential"))
   }
 
   test("query invalid resource") {
     val sifRequest = new SifRequest(Environment.srxProvider, "invalid_resource")
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(404))
     assert(response.body.get.contains("Service[invalid_resource] not found"))
   }
@@ -110,7 +111,7 @@ class SifConsumerTests extends FunSuite {
       sifRequest.addHeader("districtStudentId", "1")
       sifRequest.addHeader("authorizedEntityId", "1")
 
-      val response = new SifConsumer().query(sifRequest)
+      val response = SifConsumer().query(sifRequest)
       assert(response.statusCode.equals(200))
       assert(response.responseAction.orNull.equals(SifRequestAction.Query))
       assert(response.body.orNull.length > 0)
@@ -143,7 +144,7 @@ class SifConsumerTests extends FunSuite {
     sifRequest.addHeader("districtStudentId", "1")
     sifRequest.addHeader("authorizedEntityId", "1")
 
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(200))
     assert(response.responseAction.orNull.equals(SifRequestAction.Query))
     assert(response.body.orNull.length > 0)
@@ -169,7 +170,7 @@ class SifConsumerTests extends FunSuite {
     sifRequest.requestAction = Option(requestAction)
     sifRequest.requestType = Option(requestType)
 
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(200))
     assert(response.responseAction.orNull.equals(SifRequestAction.Query))
     assert(response.body.get.contains("sample1"))
@@ -195,9 +196,25 @@ class SifConsumerTests extends FunSuite {
     sifRequest.requestAction = Option(requestAction)
     sifRequest.requestType = Option(requestType)
 
-    val response = new SifConsumer().query(sifRequest)
+    val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(404))
     assert(response.body.get.contains("Not Found"))
+  }
+
+  test("create empty body") {
+    val sifRequest = new SifRequest(Environment.srxProvider, "SrxMessage")
+    val thrown = intercept[ArgumentInvalidException] {
+      SifConsumer().create(sifRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body")))
+  }
+
+  test("update empty body") {
+    val sifRequest = new SifRequest(Environment.srxProvider, "SrxMessage")
+    val thrown = intercept[ArgumentInvalidException] {
+      SifConsumer().update(sifRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body")))
   }
 
 }

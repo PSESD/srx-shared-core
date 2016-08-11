@@ -16,7 +16,7 @@ import scala.xml.Node
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 class SrxRequest private(val sifRequest: SifRequest) {
   if (sifRequest == null) {
     throw new ArgumentNullException("sifRequest parameter")
@@ -75,9 +75,9 @@ class SrxRequest private(val sifRequest: SifRequest) {
 object SrxRequest {
   def apply(sifRequest: SifRequest) = new SrxRequest(sifRequest)
 
-  def apply(provider: SifProvider, httpRequest: Request) = new SrxRequest(getSifRequest(provider, httpRequest))
+  def apply(provider: SifProvider, httpRequest: Request) = new SrxRequest(receiveSifRequest(provider, httpRequest))
 
-  private def getSifRequest(provider: SifProvider, httpRequest: Request): SifRequest = {
+  private def receiveSifRequest(provider: SifProvider, httpRequest: Request): SifRequest = {
     if (provider == null) {
       throw new ArgumentNullException("provider parameter")
     }

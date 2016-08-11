@@ -5,7 +5,8 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.apache.http.util.EntityUtils
 import org.json4s.native.JsonMethods._
-import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, SifContentTypeInvalidException}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, SifContentTypeInvalidException}
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifMessageType.SifMessageType
 
@@ -27,8 +28,8 @@ class SifConsumer {
     if (sifRequest == null) {
       throw new ArgumentNullException("sifRequest parameter")
     }
-    if (sifRequest.body.orNull == null) {
-      throw new ArgumentNullException("sifRequest body")
+    if (sifRequest.body.getOrElse("").isNullOrEmpty) {
+      throw new ArgumentInvalidException("request body")
     }
 
     sifRequest.requestAction = Option(SifRequestAction.Create)
@@ -109,8 +110,8 @@ class SifConsumer {
     if (sifRequest == null) {
       throw new ArgumentNullException("sifRequest parameter")
     }
-    if (sifRequest.body.orNull == null) {
-      throw new ArgumentNullException("sifRequest body")
+    if (sifRequest.body.getOrElse("").isNullOrEmpty) {
+      throw new ArgumentInvalidException("request body")
     }
 
     sifRequest.requestAction = Option(SifRequestAction.Update)
