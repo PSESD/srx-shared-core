@@ -15,5 +15,6 @@ object ExceptionMessage {
   final val RollbarUnauthorized = "Rollbar message send failed with 401: Unauthorized. Check 'ROLLBAR_ACCESS_TOKEN' environment variable."
   final val RollbarUnhandled = "Rollbar message send failed with code %s."
   final val SifAuthenticationMethodInvalid = "SIF authentication method '%s' is invalid."
+  final val SifHeaderInvalid = "SIF header '%s' contains invalid value '%s'."
   final val SifProviderNotAuthorized = "SIF user or session '%s' not authorized."
 }

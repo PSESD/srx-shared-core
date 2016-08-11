@@ -3,6 +3,7 @@ package org.psesd.srx.shared.core
 import org.http4s.dsl.{->, /, Root, _}
 import org.http4s.server.blaze.BlazeBuilder
 import org.http4s.server.{Router, Server, ServerApp}
+import org.http4s.util.CaseInsensitiveString
 import org.http4s.{HttpService, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.SifRequestNotAuthorizedException
@@ -119,10 +120,10 @@ trait SrxServer extends ServerApp {
   private def getErrorSrxResponse(httpRequest: Request): SrxResponse = {
     val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
     try {
-      sifRequest.accept = SrxRequest.getAccept(httpRequest)
-      sifRequest.requestAction = SrxRequest.getRequestAction(httpRequest)
-      sifRequest.requestId = SrxRequest.getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
-      sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(SrxRequest.getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
+      sifRequest.accept = sifRequest.getContentType(getHeaderValue(httpRequest, SifHeader.Accept.toString))
+      sifRequest.requestAction = sifRequest.getRequestAction(getHeaderValue(httpRequest, SifHeader.RequestAction.toString), httpRequest.method.name)
+      sifRequest.requestId = getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
+      sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
     } catch {
       case _: Throwable =>
     }
@@ -165,6 +166,24 @@ trait SrxServer extends ServerApp {
       }
     }
     srxResponse
+  }
+
+  protected def getHeaderValue(httpRequest: Request, name: String): String = {
+    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
+    if (header == null) {
+      null
+    } else {
+      header.value
+    }
+  }
+
+  protected def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
+    val value = getHeaderValue(httpRequest, name)
+    if (value == null) {
+      None
+    } else {
+      Option(value)
+    }
   }
 
   private def logServerEvent(event: String, args: List[String]): Unit = {

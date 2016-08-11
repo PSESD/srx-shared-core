@@ -2,12 +2,11 @@ package org.psesd.srx.shared.core
 
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, SifRequestNotAuthorizedException}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException, SifRequestNotAuthorizedException}
 import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif.SifAuthenticationMethod.SifAuthenticationMethod
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
-import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
 
 import scala.xml.Node
@@ -17,7 +16,7 @@ import scala.xml.Node
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  **/
+  * */
 class SrxRequest private(val sifRequest: SifRequest) {
   if (sifRequest == null) {
     throw new ArgumentNullException("sifRequest parameter")
@@ -121,7 +120,7 @@ object SrxRequest {
     if (timestampHeader == null) {
       throw new ArgumentNullException("timestamp header")
     }
-    if(!SifTimestamp.isValid(timestampHeader.value)) {
+    if (!SifTimestamp.isValid(timestampHeader.value)) {
       throw new ArgumentInvalidException("timestamp header")
     }
     val timestamp = SifTimestamp(timestampHeader.value)
@@ -131,6 +130,12 @@ object SrxRequest {
     try {
       authenticator.validateRequestAuthorization(authorizationHeader.value, timestamp.toString)
     } catch {
+      case ai: ArgumentInvalidException =>
+        throw new SifRequestNotAuthorizedException(ai.getMessage.replace("parameter", "header"))
+
+      case an: ArgumentNullOrEmptyOrWhitespaceException =>
+        throw new SifRequestNotAuthorizedException(an.getMessage.replace("parameter", "header"))
+
       case e: Exception =>
         throw new SifRequestNotAuthorizedException(e.getMessage)
     }
@@ -138,82 +143,42 @@ object SrxRequest {
     // construct SIF request
     val sifRequest = new SifRequest(provider, resourceUri, zone, context, timestamp)
 
-    // add all original headers
+    // add all received header values
     for (h <- httpRequest.headers) {
       sifRequest.addHeader(h.name.value, h.value)
     }
 
+    // validate received headers are either empty, or contain a valid SIF value
+    sifRequest.validateReceivedHeaders()
+
     // set SIF-specific properties
-    sifRequest.accept = getAccept(httpRequest)
-    sifRequest.contentType = getContentType(getHeaderValue(httpRequest, SifHttpHeader.ContentType.toString))
-    sifRequest.generatorId = getHeaderValueOption(httpRequest, SifHeader.GeneratorId.toString)
-    val messageId = getHeaderValue(httpRequest, SifHeader.MessageId.toString)
+    sifRequest.accept = sifRequest.getContentType(sifRequest.getHeaderValue(SifHeader.Accept.toString))
+    sifRequest.contentType = sifRequest.getContentType(sifRequest.getHeaderValue(SifHttpHeader.ContentType.toString))
+    sifRequest.generatorId = sifRequest.getHeaderValueOption(SifHeader.GeneratorId.toString)
+    val messageId = sifRequest.getHeaderValue(SifHeader.MessageId.toString)
     if (!messageId.isNullOrEmpty) {
       sifRequest.messageId = Option(SifMessageId(messageId))
     }
-    sifRequest.messageType = SifMessageType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.MessageType.toString))
-    sifRequest.queueId = getHeaderValueOption(httpRequest, SifHeader.QueueId.toString)
-    sifRequest.requestAction = getRequestAction(httpRequest)
-    sifRequest.requestId = getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
-    sifRequest.requestType = SifRequestType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.RequestType.toString))
-    sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
+    sifRequest.messageType = SifMessageType.withNameCaseInsensitiveOption(sifRequest.getHeaderValue(SifHeader.MessageType.toString))
+    sifRequest.queueId = sifRequest.getHeaderValueOption(SifHeader.QueueId.toString)
+    sifRequest.requestAction = sifRequest.getRequestAction(sifRequest.getHeaderValue(SifHeader.RequestAction.toString), httpRequest.method.name)
+    sifRequest.requestId = sifRequest.getHeaderValueOption(SifHeader.RequestId.toString)
+    sifRequest.requestType = SifRequestType.withNameCaseInsensitiveOption(sifRequest.getHeaderValue(SifHeader.RequestType.toString))
+    sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(sifRequest.getHeaderValue(SifHeader.ServiceType.toString))
 
     // set body
     sifRequest.body = Option(httpRequest.body.value)
 
+    // ensure body is present for CREATE and UPDATE requests
+    if (sifRequest.requestAction.isDefined &&
+      (sifRequest.requestAction.get.equals(SifRequestAction.Create)
+        || sifRequest.requestAction.get.equals(SifRequestAction.Update)) &&
+      sifRequest.body.getOrElse("").isNullOrEmpty
+    ) {
+      throw new ArgumentInvalidException("request body")
+    }
+
     sifRequest
-  }
-
-  def getAccept(httpRequest: Request): Option[SifContentType] = {
-    getContentType(getHeaderValue(httpRequest, SifHeader.Accept.toString))
-  }
-
-  def getContentType(value: String): Option[SifContentType] = {
-    if (value.isNullOrEmpty) {
-      None
-    } else {
-      if (value.toLowerCase.contains("json")) {
-        Option(SifContentType.Json)
-      } else {
-        if (value.toLowerCase.contains("xml")) {
-          Option(SifContentType.Xml)
-        } else {
-          None
-        }
-      }
-    }
-  }
-
-  def getHeaderValueOption(httpRequest: Request, name: String): Option[String] = {
-    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
-    if (header == null) {
-      None
-    } else {
-      Option(header.value)
-    }
-  }
-
-  def getRequestAction(httpRequest: Request): Option[SifRequestAction] = {
-    val requestAction = SifRequestAction.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.RequestAction.toString))
-    if (requestAction.isEmpty) {
-      val action = SifRequestAction.fromHttpMethod(SifHttpRequestMethod.withNameCaseInsensitive(httpRequest.method.name))
-      if (action == null) {
-        None
-      } else {
-        Option(action)
-      }
-    } else {
-      requestAction
-    }
-  }
-
-  def getHeaderValue(httpRequest: Request, name: String): String = {
-    val header = httpRequest.headers.get(CaseInsensitiveString(name)).orNull
-    if (header == null) {
-      null
-    } else {
-      header.value
-    }
   }
 
   private def getResourceUri(provider: SifProvider, uri: SifUri): String = {

@@ -3,7 +3,7 @@ package org.psesd.srx.shared.core
 import org.http4s.Header.Raw
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage, SifRequestNotAuthorizedException}
+import org.psesd.srx.shared.core.exceptions._
 import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
@@ -71,7 +71,7 @@ class SrxRequestTests extends FunSuite {
     val thrown = intercept[SifRequestNotAuthorizedException] {
       SrxRequest(TestValues.sifProvider, httpRequest)
     }
-    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("authorization parameter")))
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("authorization header")))
   }
 
   test("null timestamp header") {
@@ -101,6 +101,134 @@ class SrxRequestTests extends FunSuite {
       SrxRequest(TestValues.sifProvider, httpRequest)
     }
     assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("timestamp header")))
+  }
+
+  test("invalid accept header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.Accept.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHeader.Accept.toString, "invalid")))
+  }
+
+  test("invalid content-type header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHttpHeader.ContentType.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHttpHeader.ContentType.toString, "invalid")))
+  }
+
+  test("invalid messageType header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.MessageType.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHeader.MessageType.toString, "invalid")))
+  }
+
+  test("invalid requestAction header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.RequestAction.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHeader.RequestAction.toString, "invalid")))
+  }
+
+  test("invalid requestType header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.RequestType.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHeader.RequestType.toString, "invalid")))
+  }
+
+  test("invalid serviceType header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.ServiceType.toString), "invalid")
+      )
+    )
+    val thrown = intercept[SifHeaderInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.SifHeaderInvalid.format(SifHeader.ServiceType.toString, "invalid")))
+  }
+
+  test("empty CREATE body") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.RequestAction.toString), SifRequestAction.Create.toString)
+      )
+    )
+    val thrown = intercept[ArgumentInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body")))
+  }
+
+  test("empty UPDATE body") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
+        Raw(CaseInsensitiveString(SifHeader.RequestAction.toString), SifRequestAction.Update.toString)
+      )
+    )
+    val thrown = intercept[ArgumentInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("request body")))
   }
 
   test("valid xml request") {

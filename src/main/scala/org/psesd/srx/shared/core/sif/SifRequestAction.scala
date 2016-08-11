@@ -29,6 +29,9 @@ object SifRequestAction extends ExtendedEnumeration {
 
       case SifHttpRequestMethod.Put =>
         Update
+
+      case _ =>
+        null
     }
   }
 }

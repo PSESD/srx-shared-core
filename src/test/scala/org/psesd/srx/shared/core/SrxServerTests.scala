@@ -118,7 +118,7 @@ class SrxServerTests extends FunSuite {
       assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
       assert(responseBody.contains("<scope>Info</scope>"))
       assert(responseBody.contains("<message>Unauthorized</message>"))
-      assert(responseBody.contains("<description>The authorization parameter is invalid.</description>"))
+      assert(responseBody.contains("<description>The authorization header is invalid.</description>"))
     }
   }
 

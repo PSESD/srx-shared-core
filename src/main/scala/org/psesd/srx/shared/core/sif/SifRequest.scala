@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.exceptions.ArgumentNullException
+import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, SifHeaderInvalidException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
 import org.psesd.srx.shared.core.sif.SifMessageType.SifMessageType
@@ -72,6 +72,22 @@ class SifRequest(provider: SifProvider,
     )
   }
 
+  def getContentType(value: String): Option[SifContentType] = {
+    if (value.isNullOrEmpty) {
+      None
+    } else {
+      if (value.toLowerCase.contains("json")) {
+        Option(SifContentType.Json)
+      } else {
+        if (value.toLowerCase.contains("xml")) {
+          Option(SifContentType.Xml)
+        } else {
+          None
+        }
+      }
+    }
+  }
+
   def getHeaders: TrieMap[String, String] = {
     addHeader(SifHeader.Accept.toString, accept.getOrElse("").toString)
     addHeader(SifHeader.Authorization.toString, authorization.toString)
@@ -86,6 +102,54 @@ class SifRequest(provider: SifProvider,
     addHeader(SifHeader.ServiceType.toString, serviceType.getOrElse("").toString)
     addHeader(SifHeader.Timestamp.toString, timestamp.toString)
     headers
+  }
+
+  def getHeaderValue(name: String): String = {
+    val header = headers.find(h => h._1.toLowerCase == name.toLowerCase)
+    if(header.isDefined) {
+      header.get._2
+    } else {
+      null
+    }
+  }
+
+  def getHeaderValueOption(name: String): Option[String] = {
+    val value = getHeaderValue(name)
+    if (value == null) {
+      None
+    } else {
+      Option(value)
+    }
+  }
+
+  def getRequestAction(requestActionHeaderValue: String, httpRequestMethod: String): Option[SifRequestAction] = {
+    val requestAction = SifRequestAction.withNameCaseInsensitiveOption(requestActionHeaderValue)
+    if (requestAction.isEmpty) {
+      val action = SifRequestAction.fromHttpMethod(SifHttpRequestMethod.withNameCaseInsensitive(httpRequestMethod))
+      if (action == null) {
+        None
+      } else {
+        Option(action)
+      }
+    } else {
+      requestAction
+    }
+  }
+
+  def validateReceivedHeaders(): Unit = {
+    validateReceivedHeader(SifHeader.Accept.toString, getContentType)
+    validateReceivedHeader(SifHttpHeader.ContentType.toString, getContentType)
+    validateReceivedHeader(SifHeader.MessageType.toString, SifMessageType.withNameCaseInsensitiveOption)
+    validateReceivedHeader(SifHeader.RequestAction.toString, SifRequestAction.withNameCaseInsensitiveOption)
+    validateReceivedHeader(SifHeader.RequestType.toString, SifRequestType.withNameCaseInsensitiveOption)
+    validateReceivedHeader(SifHeader.ServiceType.toString, SifServiceType.withNameCaseInsensitiveOption)
+  }
+
+  private def validateReceivedHeader(headerName: String, getConvertedValue: (String) => Option[Any]): Unit = {
+    val receivedValue = getHeaderValue(headerName)
+    if(!receivedValue.isNullOrEmpty && getConvertedValue(receivedValue).isEmpty) {
+      throw new SifHeaderInvalidException(headerName, receivedValue)
+    }
   }
 
 }

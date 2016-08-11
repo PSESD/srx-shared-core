@@ -7,6 +7,7 @@ class SifRequestTests extends FunSuite {
 
   test("default request") {
     val sifRequest = new SifRequest(SifTestValues.sifProvider, "", SifZone(), SifContext(), SifTestValues.timestamp)
+    sifRequest.validateReceivedHeaders()
 
     // constructor
     assert(sifRequest.authorization.toString.equals(SifTestValues.authorization.toString))
