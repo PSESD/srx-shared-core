@@ -3,7 +3,7 @@ package org.psesd.srx.shared.core
 import org.http4s.Header.Raw
 import org.http4s._
 import org.http4s.util.CaseInsensitiveString
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage, SifRequestNotAuthorizedException}
 import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
@@ -59,6 +59,21 @@ class SrxRequestTests extends FunSuite {
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("authorization header")))
   }
 
+  test("invalid authorization header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), "invalid"),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString)
+      )
+    )
+    val thrown = intercept[SifRequestNotAuthorizedException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("authorization parameter")))
+  }
+
   test("null timestamp header") {
     val httpRequest = new Request(
       method = Method.GET,
@@ -71,6 +86,21 @@ class SrxRequestTests extends FunSuite {
       SrxRequest(TestValues.sifProvider, httpRequest)
     }
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("timestamp header")))
+  }
+
+  test("invalid timestamp header") {
+    val httpRequest = new Request(
+      method = Method.GET,
+      uri = new Uri(None, None, testSrxUri.toString),
+      headers = Headers(
+        Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
+        Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), "invalid")
+      )
+    )
+    val thrown = intercept[ArgumentInvalidException] {
+      SrxRequest(TestValues.sifProvider, httpRequest)
+    }
+    assert(thrown.getMessage.equals(ExceptionMessage.IsInvalid.format("timestamp header")))
   }
 
   test("valid xml request") {
@@ -109,12 +139,13 @@ class SrxRequestTests extends FunSuite {
         Raw(CaseInsensitiveString(SifHeader.Authorization.toString), TestValues.authorization.toString),
         Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), TestValues.timestamp.toString),
         Raw(CaseInsensitiveString(SifHeader.Accept.toString), SifContentType.Json.toString),
-        Raw(CaseInsensitiveString(SifHttpHeader.ContentType.toString), SifContentType.Json.toString)
+        Raw(CaseInsensitiveString(SifHttpHeader.ContentType.toString), "json")
       ),
       body = requestBody.toEntityBody
     )
     val srxRequest = SrxRequest(TestValues.sifProvider, httpRequest)
     assert(srxRequest.acceptsJson)
+    assert(srxRequest.sifRequest.contentType.get.equals(SifContentType.Json))
     val bodyJsonString = srxRequest.getBodyXml.get.toJsonString
     assert(bodyJsonString.equals(bodyJsonLinux) || bodyJsonString.equals(bodyJsonWindows))
   }

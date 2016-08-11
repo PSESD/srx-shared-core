@@ -121,6 +121,9 @@ object SrxRequest {
     if (timestampHeader == null) {
       throw new ArgumentNullException("timestamp header")
     }
+    if(!SifTimestamp.isValid(timestampHeader.value)) {
+      throw new ArgumentInvalidException("timestamp header")
+    }
     val timestamp = SifTimestamp(timestampHeader.value)
 
     // validate authorization header
@@ -142,7 +145,7 @@ object SrxRequest {
 
     // set SIF-specific properties
     sifRequest.accept = getAccept(httpRequest)
-    sifRequest.contentType = SifContentType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHttpHeader.ContentType.toString))
+    sifRequest.contentType = getContentType(getHeaderValue(httpRequest, SifHttpHeader.ContentType.toString))
     sifRequest.generatorId = getHeaderValueOption(httpRequest, SifHeader.GeneratorId.toString)
     val messageId = getHeaderValue(httpRequest, SifHeader.MessageId.toString)
     if (!messageId.isNullOrEmpty) {
@@ -162,14 +165,17 @@ object SrxRequest {
   }
 
   def getAccept(httpRequest: Request): Option[SifContentType] = {
-    val headerValue = getHeaderValue(httpRequest, SifHeader.Accept.toString)
-    if (headerValue.isNullOrEmpty) {
+    getContentType(getHeaderValue(httpRequest, SifHeader.Accept.toString))
+  }
+
+  def getContentType(value: String): Option[SifContentType] = {
+    if (value.isNullOrEmpty) {
       None
     } else {
-      if (headerValue.toLowerCase.contains("json")) {
+      if (value.toLowerCase.contains("json")) {
         Option(SifContentType.Json)
       } else {
-        if (headerValue.toLowerCase.contains("xml")) {
+        if (value.toLowerCase.contains("xml")) {
           Option(SifContentType.Xml)
         } else {
           None
