@@ -65,7 +65,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     var body = ""
     var userIp = ""
     if (message.srxRequest.isDefined) {
-      url = message.srxRequest.get.sifRequest.uri.toString
+      url = message.srxRequest.get.sifRequest.getUri.toString
       method = message.srxRequest.get.method
       body = message.srxRequest.get.sifRequest.body.getOrElse("")
       userIp = message.srxRequest.get.sourceIp

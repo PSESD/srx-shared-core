@@ -34,7 +34,7 @@ class SifConsumer {
 
     sifRequest.requestAction = Option(SifRequestAction.Create)
 
-    val httpPost = new HttpPost(sifRequest.uri.toString)
+    val httpPost = new HttpPost(sifRequest.getUri.toString)
     setHttpHeaders(sifRequest, httpPost)
     httpPost.setEntity(new StringEntity(sifRequest.body.get))
 
@@ -61,7 +61,7 @@ class SifConsumer {
 
     sifRequest.requestAction = Option(SifRequestAction.Delete)
 
-    val httpDelete = new HttpDelete(sifRequest.uri.toString)
+    val httpDelete = new HttpDelete(sifRequest.getUri.toString)
     setHttpHeaders(sifRequest, httpDelete)
 
     var response: SifResponse = null
@@ -87,7 +87,7 @@ class SifConsumer {
 
     sifRequest.requestAction = Option(SifRequestAction.Query)
 
-    val httpGet = new HttpGet(sifRequest.uri.toString)
+    val httpGet = new HttpGet(sifRequest.getUri.toString)
     setHttpHeaders(sifRequest, httpGet)
 
     var response: SifResponse = null
@@ -116,7 +116,7 @@ class SifConsumer {
 
     sifRequest.requestAction = Option(SifRequestAction.Update)
 
-    val httpPut = new HttpPut(sifRequest.uri.toString)
+    val httpPut = new HttpPut(sifRequest.getUri.toString)
     setHttpHeaders(sifRequest, httpPut)
     httpPut.setEntity(new StringEntity(sifRequest.body.get))
 

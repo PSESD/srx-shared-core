@@ -18,20 +18,29 @@ object SifRequestAction extends ExtendedEnumeration {
 
   def fromHttpMethod(method: SifHttpRequestMethod): SifRequestAction = {
     method match {
+      case SifHttpRequestMethod.Post =>
+        Create
+
       case SifHttpRequestMethod.Delete =>
         Delete
 
       case SifHttpRequestMethod.Get =>
         Query
 
-      case SifHttpRequestMethod.Post =>
-        Create
-
       case SifHttpRequestMethod.Put =>
         Update
 
       case _ =>
         null
+    }
+  }
+
+  def getSuccessStatusCode(action: SifRequestAction): Int = {
+    action match {
+      case Create =>
+        201
+      case _ =>
+        200
     }
   }
 }

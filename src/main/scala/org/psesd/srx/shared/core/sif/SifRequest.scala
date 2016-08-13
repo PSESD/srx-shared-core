@@ -8,6 +8,7 @@ import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif.SifRequestType.SifRequestType
 
 import scala.collection.concurrent.TrieMap
+import scala.collection.mutable.ArrayBuffer
 
 /** Represents a SIF request.
   *
@@ -63,13 +64,26 @@ class SifRequest(provider: SifProvider,
   var queueId: Option[String] = None
   var requestAction: Option[SifRequestAction] = None
   var requestType: Option[SifRequestType] = Option(SifRequestType.Immediate)
-  var uri: SifUri = {
-    SifUri(
-      provider.url.toString.trimTrailingSlash
-      + "/" + resourceUri.trimPrecedingSlash
-      + ";zoneId=" + zone.toString
-      + ";contextId=" + context.toString
-    )
+
+  val parameters = new ArrayBuffer[SifRequestParameter]()
+
+  private var sifUri: SifUri = _
+
+  def getUri: SifUri = {
+    if(sifUri == null) {
+      sifUri = SifUri(
+        provider.url.toString.trimTrailingSlash
+          + "/" + resourceUri.trimPrecedingSlash
+          + ";zoneId=" + zone.toString
+          + ";contextId=" + context.toString
+          + getParameterString
+      )
+    }
+    sifUri
+  }
+
+  def setUri(uri: SifUri): Unit = {
+    sifUri = uri
   }
 
   def getContentType(value: String): Option[SifContentType] = {
@@ -143,6 +157,20 @@ class SifRequest(provider: SifProvider,
     validateReceivedHeader(SifHeader.RequestAction.toString, SifRequestAction.withNameCaseInsensitiveOption)
     validateReceivedHeader(SifHeader.RequestType.toString, SifRequestType.withNameCaseInsensitiveOption)
     validateReceivedHeader(SifHeader.ServiceType.toString, SifServiceType.withNameCaseInsensitiveOption)
+  }
+
+  private def getParameterString: String = {
+    if(parameters.isEmpty) {
+      ""
+    } else {
+      val sb = new StringBuilder("?")
+      var delimiter = ""
+      for(p <- parameters) {
+        sb.append("%s%s=%s".format(delimiter, p.key, p.value))
+        delimiter = "&"
+      }
+      sb.toString
+    }
   }
 
   private def validateReceivedHeader(headerName: String, getConvertedValue: (String) => Option[Any]): Unit = {

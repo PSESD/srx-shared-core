@@ -250,7 +250,7 @@ class SrxRequestTests extends FunSuite {
     assert(srxRequest.sifRequest.context.toString.equals("test"))
     assert(!srxRequest.sifRequest.authorization.toString.isEmpty)
     assert(srxRequest.sifRequest.requestAction.orNull.toString.equals(SifRequestAction.Query.toString))
-    assert(srxRequest.sifRequest.uri.toString.equals(testSrxUri.toString))
+    assert(srxRequest.sifRequest.getUri.toString.equals(testSrxUri.toString))
     assert(srxRequest.sifRequest.timestamp.toString.equals(TestValues.timestamp.toString))
     assert(!srxRequest.acceptsJson)
     assert(srxRequest.getBodyXml.get.toXmlString.equals(requestBody))

@@ -7,15 +7,16 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClients}
 import org.apache.http.util.EntityUtils
 import org.http4s.dsl._
-import org.http4s.{Method, Request}
+import org.http4s.{HttpService, Method, Request}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.extensions.HttpTypeExtensions._
 import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
+import scala.xml.Node
 
 class SrxServerTests extends FunSuite {
 
@@ -163,6 +164,17 @@ class SrxServerTests extends FunSuite {
     }
   }
 
+  test("execute request") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, "TestEntity")
+      sifRequest.parameters += SifRequestParameter("a", "b")
+      sifRequest.parameters += SifRequestParameter("x", "y")
+      sifRequest.body = Some("<test/>")
+      val response = new SifConsumer().create(sifRequest)
+      printlnResponse(response)
+    }
+  }
+
   private def delayedInterrupt(delay: Long) {
     delayedInterrupt(Thread.currentThread, delay)
   }
@@ -195,6 +207,28 @@ class SrxServerTests extends FunSuite {
     def srxService = TestValues.srxService
 
     def sifProvider = TestValues.sifProvider
+
+    override def serviceRouter(implicit executionContext: ExecutionContext) = HttpService {
+
+      case req@GET -> Root =>
+        Ok()
+
+      case _ -> Root =>
+        NotImplemented()
+
+      case GET -> Root / "ping" =>
+        Ok(true.toString)
+
+      case req@GET -> Root / _ if req.pathInfo.startsWith("/info") =>
+        respondWithInfo(getDefaultSrxResponse(req)).toHttpResponse
+
+      case req@POST -> Root / _ if req.pathInfo.startsWith("/TestEntity") =>
+        executeRequest(req, "TestEntity", TestValues.TestEntityService, TestValues.TestEntity.apply).toHttpResponse
+
+      case _ =>
+        NotFound()
+
+    }
   }
 
 }

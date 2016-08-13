@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 class SifUriTests extends FunSuite {
 
   test("valid uri") {
-    val sifUri = SifUri("https://host/service/object;zoneId=ZONE;contextId=CONTEXT")
+    val sifUri = SifUri("https://host/service/object;zoneId=ZONE;contextId=CONTEXT?a=b&c=d")
     assert(sifUri.contextId.getOrElse("").equals("CONTEXT"))
     assert(sifUri.host.equals("host"))
     assert(sifUri.scheme.equals("https"))

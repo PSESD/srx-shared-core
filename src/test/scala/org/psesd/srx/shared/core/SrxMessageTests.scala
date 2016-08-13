@@ -118,7 +118,7 @@ class SrxMessageTests extends FunSuite {
     sifRequest.requestAction = Some(SifRequestAction.Query)
     sifRequest.generatorId = Some(generatorId)
     sifRequest.requestId = Some(requestId)
-    sifRequest.uri = SifUri(uri)
+    sifRequest.setUri(SifUri(uri))
     sifRequest.addHeader(SifHttpHeader.UserAgent.toString, userAgent)
     sifRequest.addHeader(SifHttpHeader.ForwardedFor.toString, sourceIp)
     sifRequest.body = Some(body)

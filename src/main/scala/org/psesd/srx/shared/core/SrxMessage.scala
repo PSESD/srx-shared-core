@@ -124,7 +124,7 @@ object SrxMessage {
 
 }
 
-class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val timestamp: SifTimestamp, val description: String) {
+class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val timestamp: SifTimestamp, val description: String) extends SrxResource {
   if (srxService == null) {
     throw new ArgumentNullException("srxService parameter")
   }
@@ -237,7 +237,7 @@ class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val ti
 
   def getUri: String = {
     if (uri.isEmpty && srxRequest.isDefined) {
-      srxRequest.get.sifRequest.uri.toString
+      srxRequest.get.sifRequest.getUri.toString
     } else {
       uri.getOrElse("")
     }

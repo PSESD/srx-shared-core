@@ -3,6 +3,8 @@ package org.psesd.srx.shared.core
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.sif._
 
+import scala.xml.Node
+
 object TestValues {
 
   lazy val sifAuthenticationMethod = SifAuthenticationMethod.SifHmacSha256
@@ -20,5 +22,31 @@ object TestValues {
   )
 
   val srxService = new SrxService(new SrxServiceComponent("srx-shared-core-test", "1.0.1"), srxServiceBuildComponents)
+
+  class TestEntity(val id: String) extends SrxResource
+
+  object TestEntity {
+    def apply(node: Node): TestEntity = new TestEntity("123")
+  }
+
+  class TestEntityResult(val id: String) extends SrxResourceResult {
+    def toXml: Option[Node] = Some(<test id={id}/>)
+  }
+
+  object TestEntityService extends SrxResourceService {
+    def delete(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
+      throw new NotImplementedError("DELETE not implemented.")
+    }
+    def create(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
+      val testEntity = srxResource.asInstanceOf[TestEntity]
+      new TestEntityResult(testEntity.id)
+    }
+    def query(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
+      throw new NotImplementedError("QUERY not implemented.")
+    }
+    def update(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
+      throw new NotImplementedError("UPDATE not implemented.")
+    }
+  }
 
 }
