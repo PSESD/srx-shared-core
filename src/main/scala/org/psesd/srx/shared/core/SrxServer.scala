@@ -243,9 +243,8 @@ trait SrxServer extends ServerApp {
             throw new ArgumentInvalidException("requestAction")
 
         }
-        if (result.success) {
-          response.sifResponse.statusCode = SifRequestAction.getSuccessStatusCode(requestAction)
-        } else {
+        response.sifResponse.statusCode = result.statusCode
+        if (!result.success) {
           val errorMessage = {
             if (result.exceptions.nonEmpty) {
               result.exceptions.head.getMessage
@@ -254,7 +253,7 @@ trait SrxServer extends ServerApp {
             }
           }
           response.setError(new SifError(
-            InternalServerError.code,
+            result.statusCode,
             resourceName,
             "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName),
             errorMessage

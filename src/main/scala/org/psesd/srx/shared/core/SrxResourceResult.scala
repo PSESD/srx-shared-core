@@ -14,5 +14,7 @@ trait SrxResourceResult {
 
   def success: Boolean = exceptions.isEmpty
 
+  var statusCode: Int = 0
+
   def toXml: Option[Node]
 }

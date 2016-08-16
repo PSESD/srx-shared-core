@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core
 
 import org.psesd.srx.shared.core.config.Environment
+import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
 
 import scala.xml.Node
@@ -31,7 +32,8 @@ object TestValues {
     def apply(node: Node): TestEntity = new TestEntity("123")
   }
 
-  class TestEntityResult(val id: String) extends SrxResourceResult {
+  class TestEntityResult(val requestAction: SifRequestAction, val id: String) extends SrxResourceResult {
+    statusCode = SifRequestAction.getSuccessStatusCode(requestAction)
     def toXml: Option[Node] = Some(<test id={id}/>)
   }
 
@@ -43,12 +45,12 @@ object TestValues {
 
     def create(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
       val testEntity = srxResource.asInstanceOf[TestEntity]
-      new TestEntityResult(testEntity.id)
+      new TestEntityResult(SifRequestAction.Create, testEntity.id)
     }
 
     def query(parameters: List[SifRequestParameter]): SrxResourceResult = {
       val id = parameters.find(p => p.key.toLowerCase.equals("id")).get.value
-      new TestEntityResult(id)
+      new TestEntityResult(SifRequestAction.Query, id)
     }
 
     def update(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
