@@ -8,10 +8,11 @@ import scala.xml.Node
   * @version 1.0
   * @since 1.0
   * @author Stephen Pugmire (iTrellis, LLC)
-  * */
+  **/
 trait SrxResourceResult {
   val exceptions = new ArrayBuffer[Exception]()
-  val success: Boolean = exceptions.isEmpty
+
+  def success: Boolean = exceptions.isEmpty
 
   def toXml: Option[Node]
 }
