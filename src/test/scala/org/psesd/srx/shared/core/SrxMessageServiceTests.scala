@@ -41,7 +41,7 @@ class SrxMessageServiceTests extends FunSuite {
     Some(body)
   )
 
-  test("message create") {
+  ignore("message create") {
     val response = SrxMessageService.createMessage("srx-shared-core", testMessage)
     assert(response.statusCode.equals(201))
     val body = response.body.get

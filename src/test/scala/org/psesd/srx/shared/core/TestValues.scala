@@ -23,6 +23,8 @@ object TestValues {
 
   val srxService = new SrxService(new SrxServiceComponent("srx-shared-core-test", "1.0.1"), srxServiceBuildComponents)
 
+  val testEntitiesResource = "testEntities"
+
   class TestEntity(val id: String) extends SrxResource
 
   object TestEntity {
@@ -34,19 +36,25 @@ object TestValues {
   }
 
   object TestEntityService extends SrxResourceService {
-    def delete(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
+
+    def delete(parameters: List[SifRequestParameter]): SrxResourceResult = {
       throw new NotImplementedError("DELETE not implemented.")
     }
+
     def create(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
       val testEntity = srxResource.asInstanceOf[TestEntity]
       new TestEntityResult(testEntity.id)
     }
-    def query(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
-      throw new NotImplementedError("QUERY not implemented.")
+
+    def query(parameters: List[SifRequestParameter]): SrxResourceResult = {
+      val id = parameters.find(p => p.key.toLowerCase.equals("id")).get.value
+      new TestEntityResult(id)
     }
+
     def update(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
       throw new NotImplementedError("UPDATE not implemented.")
     }
+
   }
 
 }

@@ -164,13 +164,21 @@ class SrxServerTests extends FunSuite {
     }
   }
 
-  test("execute request") {
+  test("execute create request") {
     if(Environment.isLocal) {
-      val sifRequest = new SifRequest(TestValues.sifProvider, "TestEntity")
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
       sifRequest.parameters += SifRequestParameter("a", "b")
       sifRequest.parameters += SifRequestParameter("x", "y")
       sifRequest.body = Some("<test/>")
       val response = new SifConsumer().create(sifRequest)
+      printlnResponse(response)
+    }
+  }
+
+  test("execute query request by id") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource + "/1")
+      val response = new SifConsumer().query(sifRequest)
       printlnResponse(response)
     }
   }
@@ -197,10 +205,11 @@ class SrxServerTests extends FunSuite {
   }
 
   private def printlnResponse(response: SifResponse): Unit = {
+    println(response.sifRequest.getUri.toString)
     for (header <- response.getHeaders) {
       println("%s=%s".format(header._1, header._2))
     }
-    println(response.body.getOrElse(""))
+    println(response.getBody(SifContentType.Xml))
   }
 
   private object srxServer extends SrxServer {
@@ -209,21 +218,23 @@ class SrxServerTests extends FunSuite {
     def sifProvider = TestValues.sifProvider
 
     override def serviceRouter(implicit executionContext: ExecutionContext) = HttpService {
-
       case req@GET -> Root =>
         Ok()
 
       case _ -> Root =>
         NotImplemented()
 
-      case GET -> Root / "ping" =>
+      case req@GET -> Root / _ if services(req, CoreResource.Ping.toString) =>
         Ok(true.toString)
 
-      case req@GET -> Root / _ if req.pathInfo.startsWith("/info") =>
-        respondWithInfo(getDefaultSrxResponse(req)).toHttpResponse
+      case req@GET -> Root / _ if services(req, CoreResource.Info.toString) =>
+        respondWithInfo(getDefaultSrxResponse(req))
 
-      case req@POST -> Root / _ if req.pathInfo.startsWith("/TestEntity") =>
-        executeRequest(req, "TestEntity", TestValues.TestEntityService, TestValues.TestEntity.apply).toHttpResponse
+      case req@GET -> Root / TestValues.testEntitiesResource / _ =>
+        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+
+      case req@POST -> Root / _ if services(req, TestValues.testEntitiesResource) =>
+        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
 
       case _ =>
         NotFound()

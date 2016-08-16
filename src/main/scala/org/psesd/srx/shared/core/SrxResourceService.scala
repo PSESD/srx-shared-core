@@ -9,11 +9,11 @@ import org.psesd.srx.shared.core.sif.SifRequestParameter
   * @author Stephen Pugmire (iTrellis, LLC)
   * */
 trait SrxResourceService {
-  def delete(resource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult
+  def delete(parameters: List[SifRequestParameter]): SrxResourceResult
 
   def create(resource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult
 
-  def query(resource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult
+  def query(parameters: List[SifRequestParameter]): SrxResourceResult
 
   def update(resource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult
 }
