@@ -127,7 +127,6 @@ class SrxServerTests extends FunSuite {
       val invalidProvider = new SifProvider(TestValues.sifUrl, TestValues.sessionToken, TestValues.sharedSecret, SifAuthenticationMethod.Basic)
       val sifRequest = new SifRequest(invalidProvider, "info")
       val response = new SifConsumer().query(sifRequest)
-      // printlnResponse(response)
       val responseBody = response.body.getOrElse("")
       assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(responseBody.contains("<scope>Info</scope>"))
@@ -143,7 +142,6 @@ class SrxServerTests extends FunSuite {
       sifRequest.accept = Option(SifContentType.Json)
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
-      // printlnResponse(response)
       assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(response.contentType.get.equals(SifContentType.Json))
       assert(responseBody.contains("\"scope\" : \"Info\""))
@@ -158,12 +156,12 @@ class SrxServerTests extends FunSuite {
       val task = srxServer.service.run(getInfo)
       val response = task.run
       val body = response.body.value
-      assert(response.status.code.equals(HttpStatus.SC_BAD_REQUEST))
+      assert(response.status.code.equals(SifHttpStatusCode.BadRequest))
       assert(body.contains("The sifUri is invalid."))
     }
   }
 
-  test("execute create request") {
+  test("create valid") {
     if(Environment.isLocal) {
       val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
       sifRequest.parameters += SifRequestParameter("a", "b")
@@ -171,14 +169,70 @@ class SrxServerTests extends FunSuite {
       sifRequest.body = Some("<test/>")
       val response = new SifConsumer().create(sifRequest)
       printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.Created))
+      assert(response.getBody(SifContentType.Xml).equals("<test id=\"123\"/>"))
     }
   }
 
-  test("execute query request by id") {
+  test("create invalid xml") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
+      sifRequest.body = Some("invalid")
+      val response = new SifConsumer().create(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.BadRequest))
+      assert(response.getBody(SifContentType.Xml).contains("<message>Failed to create testEntities.</message>"))
+      assert(response.getBody(SifContentType.Xml).contains("<description>The request body XML is invalid.</description>"))
+    }
+  }
+
+  test("create invalid xml content") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
+      sifRequest.body = Some("<invalid/>")
+      val response = new SifConsumer().create(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.BadRequest))
+      assert(response.getBody(SifContentType.Xml).contains("<message>Failed to create testEntities.</message>"))
+      assert(response.getBody(SifContentType.Xml).contains("<description>The root element 'invalid' is invalid.</description>"))
+    }
+  }
+
+  test("query by id") {
     if(Environment.isLocal) {
       val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource + "/1")
       val response = new SifConsumer().query(sifRequest)
       printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
+      assert(response.getBody(SifContentType.Xml).equals("<test id=\"1\"/>"))
+    }
+  }
+
+  test("update not allowed") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
+      sifRequest.body = Some("<test/>")
+      val response = new SifConsumer().update(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.MethodNotAllowed))
+    }
+  }
+
+  test("delete not allowed") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource + "/1")
+      val response = new SifConsumer().delete(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.MethodNotAllowed))
+    }
+  }
+
+  test("delete all not allowed") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource)
+      val response = new SifConsumer().delete(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.MethodNotAllowed))
     }
   }
 
@@ -205,6 +259,7 @@ class SrxServerTests extends FunSuite {
 
   private def printlnResponse(response: SifResponse): Unit = {
     println(response.sifRequest.getUri.toString)
+    println("RETURNED: " + response.statusCode.toString)
     for (header <- response.getHeaders) {
       println("%s=%s".format(header._1, header._2))
     }
@@ -229,10 +284,19 @@ class SrxServerTests extends FunSuite {
       case req@GET -> Root / _ if services(req, CoreResource.Info.toString) =>
         respondWithInfo(getDefaultSrxResponse(req))
 
+      case req@DELETE -> Root / _ if services(req, TestValues.testEntitiesResource) =>
+        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+
+      case req@DELETE -> Root / TestValues.testEntitiesResource / _ =>
+        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+
       case req@GET -> Root / TestValues.testEntitiesResource / _ =>
         executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
 
       case req@POST -> Root / _ if services(req, TestValues.testEntitiesResource) =>
+        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
+
+      case req@PUT -> Root / _ if services(req, TestValues.testEntitiesResource) =>
         executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
 
       case _ =>

@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core
 
 import org.psesd.srx.shared.core.config.Environment
+import org.psesd.srx.shared.core.exceptions.ArgumentInvalidException
 import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
 
@@ -29,7 +30,13 @@ object TestValues {
   class TestEntity(val id: String) extends SrxResource
 
   object TestEntity {
-    def apply(node: Node): TestEntity = new TestEntity("123")
+    def apply(node: Node): TestEntity = {
+      val rootElementName = node.label
+      if(rootElementName != "test") {
+        throw new ArgumentInvalidException("root element '%s'".format(rootElementName))
+      }
+      new TestEntity("123")
+    }
   }
 
   class TestEntityResult(val requestAction: SifRequestAction, val id: String) extends SrxResourceResult {
@@ -40,7 +47,7 @@ object TestValues {
   object TestEntityService extends SrxResourceService {
 
     def delete(parameters: List[SifRequestParameter]): SrxResourceResult = {
-      throw new NotImplementedError("DELETE not implemented.")
+      SrxResourceErrorResult(SifHttpStatusCode.MethodNotAllowed, new UnsupportedOperationException("testEntities DELETE method not allowed."))
     }
 
     def create(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
@@ -54,7 +61,7 @@ object TestValues {
     }
 
     def update(srxResource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult = {
-      throw new NotImplementedError("UPDATE not implemented.")
+      SrxResourceErrorResult(SifHttpStatusCode.MethodNotAllowed, new UnsupportedOperationException("testEntities UPDATE method not allowed."))
     }
 
   }

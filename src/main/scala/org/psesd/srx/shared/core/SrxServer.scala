@@ -222,29 +222,58 @@ trait SrxServer extends ServerApp {
                                serviceEntity: (Node) => SrxResource
                               ): Task[Response] = {
     val response = getDefaultSrxResponse(httpRequest)
+
     val requestAction = SifRequestAction.fromHttpMethod(SifHttpRequestMethod.withNameCaseInsensitive(httpRequest.method.name))
+
     if (!response.hasError) {
       try {
         val requestParameters = getRequestParameters(httpRequest, resourceName)
+        var resource: SrxResource = null
+        var resourceErrorResult: SrxResourceErrorResult = null
+
         val result = requestAction match {
+
           case SifRequestAction.Delete =>
             service.delete(requestParameters)
 
           case SifRequestAction.Create =>
-            service.create(serviceEntity(response.srxRequest.getBodyXml.orNull), requestParameters)
+            try {
+              resource = serviceEntity(response.srxRequest.getBodyXml.orNull)
+            } catch {
+              case e: Exception =>
+                resourceErrorResult = SrxResourceErrorResult(SifHttpStatusCode.BadRequest, e)
+            }
+            if(resourceErrorResult != null) {
+              resourceErrorResult
+            } else {
+              service.create(resource, requestParameters)
+            }
 
           case SifRequestAction.Query =>
             service.query(requestParameters)
 
           case SifRequestAction.Update =>
-            service.update(serviceEntity(response.srxRequest.getBodyXml.orNull), requestParameters)
+            try {
+              resource = serviceEntity(response.srxRequest.getBodyXml.orNull)
+            } catch {
+              case e: Exception =>
+                resourceErrorResult = SrxResourceErrorResult(SifHttpStatusCode.BadRequest, e)
+            }
+            if(resourceErrorResult != null) {
+              resourceErrorResult
+            } else {
+              service.update(resource, requestParameters)
+            }
 
           case _ =>
             throw new ArgumentInvalidException("requestAction")
-
         }
+
         response.sifResponse.statusCode = result.statusCode
-        if (!result.success) {
+
+        if(result.success) {
+          response.sifResponse.bodyXml = result.toXml
+        } else {
           val errorMessage = {
             if (result.exceptions.nonEmpty) {
               result.exceptions.head.getMessage
@@ -259,7 +288,6 @@ trait SrxServer extends ServerApp {
             errorMessage
           ))
         }
-        response.sifResponse.bodyXml = result.toXml
       } catch {
         case e: Exception =>
           response.setError(new SifError(
@@ -270,6 +298,7 @@ trait SrxServer extends ServerApp {
           ))
       }
     }
+
     response.toHttpResponse
   }
 
