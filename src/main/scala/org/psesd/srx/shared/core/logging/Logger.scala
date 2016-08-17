@@ -3,6 +3,7 @@ package org.psesd.srx.shared.core.logging
 import org.psesd.srx.shared.core.{SrxMessage, SrxService}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions._
+import org.psesd.srx.shared.core.sif.SifHttpStatusCode
 
 /** Logging functions shared by SRX components and services.
   *
@@ -148,12 +149,12 @@ object Logger {
   private def sendToRollbar(level: LogLevel, srxMessage: SrxMessage): Unit = {
     val result = RollbarClient.SendItem(new RollbarMessage(srxMessage, level).getJsonString())
     result match {
-      case 200 =>
+      case SifHttpStatusCode.Ok =>
 
-      case 401 =>
+      case SifHttpStatusCode.Unauthorized =>
         throw new RollbarUnauthorizedException()
 
-      case 404 =>
+      case SifHttpStatusCode.NotFound =>
         throw new RollbarNotFoundException()
 
       case _ =>

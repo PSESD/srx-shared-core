@@ -80,7 +80,7 @@ trait SrxServer extends ServerApp {
       } catch {
         case e: Exception =>
           srxResponse.setError(new SifError(
-            InternalServerError.code,
+            SifHttpStatusCode.InternalServerError,
             SrxOperation.Info.toString,
             "Unhandled exception retrieving service info.",
             e.getMessage
@@ -106,7 +106,7 @@ trait SrxServer extends ServerApp {
     try {
       val srxRequest = SrxRequest(sifProvider, httpRequest)
       srxResponse = new SrxResponse(srxRequest)
-      srxResponse.sifResponse.statusCode = Ok.code
+      srxResponse.sifResponse.statusCode = SifHttpStatusCode.Ok
     } catch {
       case ae: SifRequestNotAuthorizedException =>
         srxResponse = getErrorSrxResponse(httpRequest)
@@ -263,7 +263,7 @@ trait SrxServer extends ServerApp {
       } catch {
         case e: Exception =>
           response.setError(new SifError(
-            InternalServerError.code,
+            SifHttpStatusCode.InternalServerError,
             resourceName,
             "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName),
             e.getMessage

@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core
 
-import org.psesd.srx.shared.core.sif.{SifContext, SifMessageId, SifTimestamp, SifZone}
+import org.psesd.srx.shared.core.sif._
 import org.scalatest.FunSuite
 
 class SrxMessageServiceTests extends FunSuite {
@@ -43,7 +43,7 @@ class SrxMessageServiceTests extends FunSuite {
 
   ignore("message create") {
     val response = SrxMessageService.createMessage("srx-shared-core", testMessage)
-    assert(response.statusCode.equals(201))
+    assert(response.statusCode.equals(SifHttpStatusCode.Created))
     val body = response.body.get
     assert(body.contains("\"advisoryId\" : \"1\""))
     assert(body.contains("\"statusCode\" : \"201\""))

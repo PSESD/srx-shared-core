@@ -16,7 +16,6 @@ import org.scalatest.FunSuite
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
-import scala.xml.Node
 
 class SrxServerTests extends FunSuite {
 
@@ -38,7 +37,7 @@ class SrxServerTests extends FunSuite {
       val getRoot = Request(Method.GET, uri("/"))
       val task = srxServer.service.run(getRoot)
       val response = task.run
-      assert(response.status.code.equals(HttpStatus.SC_OK))
+      assert(response.status.code.equals(SifHttpStatusCode.Ok))
     }
   }
 
@@ -48,7 +47,7 @@ class SrxServerTests extends FunSuite {
       val task = srxServer.service.run(getPing)
       val response = task.run
       val body = response.body.value
-      assert(response.status.code.equals(HttpStatus.SC_OK))
+      assert(response.status.code.equals(SifHttpStatusCode.Ok))
       assert(body.equals(true.toString))
     }
   }
@@ -79,7 +78,7 @@ class SrxServerTests extends FunSuite {
       val sifRequest = new SifRequest(TestValues.sifProvider, "info")
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
-      assert(response.statusCode.equals(HttpStatus.SC_OK))
+      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
       assert(response.contentType.get.equals(SifContentType.Xml))
       assert(responseBody.contains("<service>"))
     }
@@ -91,7 +90,7 @@ class SrxServerTests extends FunSuite {
       sifRequest.accept = Option(SifContentType.Json)
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
-      assert(response.statusCode.equals(HttpStatus.SC_OK))
+      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
       assert(response.contentType.get.equals(SifContentType.Json))
       assert(responseBody.contains("\"service\" : {"))
     }
@@ -103,7 +102,7 @@ class SrxServerTests extends FunSuite {
       val sifRequest = new SifRequest(invalidProvider, "info")
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
-      assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+      assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(responseBody.contains("<scope>Info</scope>"))
       assert(responseBody.contains("<message>Unauthorized</message>"))
       assert(responseBody.contains("<description>SIF user or session '"))
@@ -116,7 +115,7 @@ class SrxServerTests extends FunSuite {
       val sifRequest = new SifRequest(invalidProvider, "info")
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
-      assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+      assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(responseBody.contains("<scope>Info</scope>"))
       assert(responseBody.contains("<message>Unauthorized</message>"))
       assert(responseBody.contains("<description>The authorization header is invalid.</description>"))
@@ -130,7 +129,7 @@ class SrxServerTests extends FunSuite {
       val response = new SifConsumer().query(sifRequest)
       // printlnResponse(response)
       val responseBody = response.body.getOrElse("")
-      assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+      assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(responseBody.contains("<scope>Info</scope>"))
       assert(responseBody.contains("<message>Unauthorized</message>"))
       assert(responseBody.contains("<description>SIF authentication method 'Basic' is invalid.</description>"))
@@ -145,7 +144,7 @@ class SrxServerTests extends FunSuite {
       val response = new SifConsumer().query(sifRequest)
       val responseBody = response.body.getOrElse("")
       // printlnResponse(response)
-      assert(response.statusCode.equals(HttpStatus.SC_UNAUTHORIZED))
+      assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
       assert(response.contentType.get.equals(SifContentType.Json))
       assert(responseBody.contains("\"scope\" : \"Info\""))
       assert(responseBody.contains("\"message\" : \"Unauthorized\""))

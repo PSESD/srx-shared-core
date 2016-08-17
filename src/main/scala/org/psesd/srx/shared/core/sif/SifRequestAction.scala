@@ -38,9 +38,9 @@ object SifRequestAction extends ExtendedEnumeration {
   def getSuccessStatusCode(action: SifRequestAction): Int = {
     action match {
       case Create =>
-        201
+        SifHttpStatusCode.Created
       case _ =>
-        200
+        SifHttpStatusCode.Ok
     }
   }
 }

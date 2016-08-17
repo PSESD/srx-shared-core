@@ -2,7 +2,7 @@ package org.psesd.srx.shared.core.sif
 
 import org.psesd.srx.shared.core.CoreResource
 import org.psesd.srx.shared.core.config.Environment
-import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ExceptionMessage}
+import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ExceptionMessage}
 import org.scalatest.FunSuite
 
 class SifConsumerTests extends FunSuite {
@@ -30,7 +30,7 @@ class SifConsumerTests extends FunSuite {
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "invalid_resource")
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(404))
+    assert(response.statusCode.equals(SifHttpStatusCode.NotFound))
     assert(response.body.get.contains("The requested resource is not available"))
     assert(response.exceptions(0).getMessage.equals("Response contains invalid Content-Type: 'text/html;charset=utf-8'."))
   }
@@ -43,7 +43,7 @@ class SifConsumerTests extends FunSuite {
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(400))
+    assert(response.statusCode.equals(SifHttpStatusCode.BadRequest))
     assert(response.body.get.contains("Call MUST be SSL"))
   }
 
@@ -55,7 +55,7 @@ class SifConsumerTests extends FunSuite {
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(401))
+    assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
     assert(response.body.get.contains("Environment with sessionId[test] does not exist"))
   }
 
@@ -67,14 +67,14 @@ class SifConsumerTests extends FunSuite {
       SifAuthenticationMethod.SifHmacSha256)
     val sifRequest = new SifRequest(provider, "filters", SifZone("test"))
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(401))
+    assert(response.statusCode.equals(SifHttpStatusCode.Unauthorized))
     assert(response.body.get.contains("Bad credential"))
   }
 
   test("query invalid resource") {
     val sifRequest = new SifRequest(Environment.srxProvider, "invalid_resource")
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(404))
+    assert(response.statusCode.equals(SifHttpStatusCode.NotFound))
     assert(response.body.get.contains("Service[invalid_resource] not found"))
   }
 
@@ -113,7 +113,7 @@ class SifConsumerTests extends FunSuite {
       sifRequest.addHeader("authorizedEntityId", "1")
 
       val response = SifConsumer().query(sifRequest)
-      assert(response.statusCode.equals(200))
+      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
       assert(response.responseAction.orNull.equals(SifRequestAction.Query))
       assert(response.body.orNull.length > 0)
     }
@@ -146,7 +146,7 @@ class SifConsumerTests extends FunSuite {
     sifRequest.addHeader("authorizedEntityId", "1")
 
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(200))
+    assert(response.statusCode.equals(SifHttpStatusCode.Ok))
     assert(response.responseAction.orNull.equals(SifRequestAction.Query))
     assert(response.body.orNull.length > 0)
   }
@@ -172,7 +172,7 @@ class SifConsumerTests extends FunSuite {
     sifRequest.requestType = Option(requestType)
 
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(200))
+    assert(response.statusCode.equals(SifHttpStatusCode.Ok))
     assert(response.responseAction.orNull.equals(SifRequestAction.Query))
     assert(response.body.get.contains("sample1"))
   }
@@ -198,7 +198,7 @@ class SifConsumerTests extends FunSuite {
     sifRequest.requestType = Option(requestType)
 
     val response = SifConsumer().query(sifRequest)
-    assert(response.statusCode.equals(404))
+    assert(response.statusCode.equals(SifHttpStatusCode.NotFound))
     assert(response.body.get.contains("Not Found"))
   }
 
