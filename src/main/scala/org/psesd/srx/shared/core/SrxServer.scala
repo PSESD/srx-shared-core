@@ -9,6 +9,7 @@ import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, SifRequestNotAuthorizedException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.logging.{LogLevel, Logger}
+import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
 
 import scala.collection.mutable.ArrayBuffer
@@ -24,6 +25,7 @@ import scalaz.concurrent.Task
   * */
 trait SrxServer extends ServerApp {
 
+  private final val InternalServerErrorDescription = "Internal server error."
   private final val ServerApiRootKey = "SERVER_API_ROOT"
   private final val ServerHostKey = "SERVER_HOST"
   private final val ServerPortKey = "SERVER_PORT"
@@ -269,37 +271,50 @@ trait SrxServer extends ServerApp {
             throw new ArgumentInvalidException("requestAction")
         }
 
+        // always respond with status code set by service result
         response.sifResponse.statusCode = result.statusCode
 
         if(result.success) {
+          // only set body if result = success
           response.sifResponse.bodyXml = result.toXml
         } else {
-          val errorMessage = {
-            if (result.exceptions.nonEmpty) {
+          // if internal server error, return a generic response description and log the actual error + stack trace
+          if(result.statusCode.equals(SifHttpStatusCode.InternalServerError)) {
+            response.setError(new SifError(
+              result.statusCode,
+              resourceName,
+              getResourceErrorTitle(requestAction, resourceName),
+              InternalServerErrorDescription
+            ))
+            logInternalServerError(requestAction, resourceName, response.srxRequest, result.exceptions.head)
+          } else {
+            // for all other errors return the message set by service result
+            response.setError(new SifError(
+              result.statusCode,
+              resourceName,
+              getResourceErrorTitle(requestAction, resourceName),
               result.exceptions.head.getMessage
-            } else {
-              ""
-            }
+            ))
           }
-          response.setError(new SifError(
-            result.statusCode,
-            resourceName,
-            "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName),
-            errorMessage
-          ))
         }
       } catch {
         case e: Exception =>
+          // any exception here is an unhandled server error, so return generic response and log actual error + stack trace
           response.setError(new SifError(
             SifHttpStatusCode.InternalServerError,
             resourceName,
-            "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName),
-            e.getMessage
+            getResourceErrorTitle(requestAction, resourceName),
+            InternalServerErrorDescription
           ))
+          logInternalServerError(requestAction, resourceName, response.srxRequest, e)
       }
     }
 
     response.toHttpResponse
+  }
+
+  private def getResourceErrorTitle(requestAction: SifRequestAction, resourceName: String): String = {
+    "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName)
   }
 
   private def getRequestParameters(httpRequest: Request, resourceName: String): List[SifRequestParameter] = {
@@ -355,6 +370,21 @@ trait SrxServer extends ServerApp {
       case e: Exception =>
         throw new ArgumentInvalidException("resource id")
     }
+  }
+
+  private def logInternalServerError(requestAction: SifRequestAction, resourceName: String, srxRequest: SrxRequest, e: Exception): Unit = {
+    if(e != null) {
+      srxRequest.errorMessage = Some(e.getMessage)
+      srxRequest.errorStackTrace = Some(e.getFormattedStackTrace)
+    }
+    Logger.log(LogLevel.Error, SrxMessage(
+      srxService,
+      Some(resourceName),
+      None,
+      None,
+      getResourceErrorTitle(requestAction, resourceName),
+      Some(srxRequest)
+    ))
   }
 
 }

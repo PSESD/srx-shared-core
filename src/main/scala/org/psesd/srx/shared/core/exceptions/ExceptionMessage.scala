@@ -17,4 +17,6 @@ object ExceptionMessage {
   final val SifAuthenticationMethodInvalid = "SIF authentication method '%s' is invalid."
   final val SifHeaderInvalid = "SIF header '%s' contains invalid value '%s'."
   final val SifProviderNotAuthorized = "SIF user or session '%s' not authorized."
+  final val SrxRequestActionNotAllowed = "The %s action for %s is not allowed."
+  final val SrxResourceNotFound = "The requested %s resource was not found."
 }
