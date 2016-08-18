@@ -1,5 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
+import org.json4s._
 import org.psesd.srx.shared.core.exceptions.ArgumentNullException
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif.SifContentType.SifContentType
@@ -67,7 +68,15 @@ class SifResponse(timestamp: SifTimestamp,
             bodyXml.get.toJsonString
           } else {
             if (body.isDefined) {
-              body.get
+              if(body.get.isJson) {
+                body.get
+              } else {
+                if(body.get.isXml) {
+                  body.get.toXml.toJsonString
+                } else {
+                  ""
+                }
+              }
             } else {
               ""
             }
@@ -81,12 +90,38 @@ class SifResponse(timestamp: SifTimestamp,
             bodyXml.get.toXmlString
           } else {
             if (body.isDefined) {
-              body.get
+              if(body.get.isXml) {
+                body.get
+              } else {
+                if(body.get.isJson) {
+                  body.get.toJson.toXml.toString
+                } else {
+                  ""
+                }
+              }
             } else {
               ""
             }
           }
         }
+    }
+  }
+
+  def getBodyJson: Option[JValue] = {
+    val jsonString = getBody(SifContentType.Json)
+    if(jsonString.isNullOrEmpty) {
+      None
+    } else {
+      Some(jsonString.toJson)
+    }
+  }
+
+  def getBodyXml: Option[Node] = {
+    val xmlString = getBody(SifContentType.Xml)
+    if(xmlString.isNullOrEmpty) {
+      None
+    } else {
+      Some(xmlString.toXml)
     }
   }
 

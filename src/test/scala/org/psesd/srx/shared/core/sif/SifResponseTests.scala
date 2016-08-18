@@ -1,6 +1,7 @@
 package org.psesd.srx.shared.core.sif
 
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ExceptionMessage}
+import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.scalatest.FunSuite
 
 class SifResponseTests extends FunSuite {
@@ -69,6 +70,36 @@ class SifResponseTests extends FunSuite {
       new SifResponse(timestamp, messageId, null, sifRequest)
     }
     assert(thrown.getMessage.equals(ExceptionMessage.NotNull.format("messageType parameter")))
+  }
+
+  test("getBodyJson from empty string") {
+    val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
+    sifResponse.body = Some("")
+    assert(sifResponse.getBodyJson.isEmpty)
+  }
+
+  test("getBodyJson from json string") {
+    val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
+    sifResponse.body = Some("{\"test1\": {\"test2\": {}} }")
+    assert(sifResponse.getBodyJson.get.children.length == 1)
+  }
+
+  test("getBodyJson from xml string") {
+    val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
+    sifResponse.body = Some(<test1><test2/></test1>.toString)
+    assert(sifResponse.getBodyJson.get.children.length == 1)
+  }
+
+  test("getBodyXml from json string") {
+    val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
+    sifResponse.body = Some("{\"test1\": {\"test2\": {}} }")
+    assert((sifResponse.getBodyXml.get \ "test1") != null)
+  }
+
+  test("getBodyXml from xml string") {
+    val sifResponse = new SifResponse(timestamp, messageId, messageType, sifRequest)
+    sifResponse.body = Some(<test1><test2/></test1>.toString)
+    assert((sifResponse.getBodyXml.get \ "test1") != null)
   }
 
 }

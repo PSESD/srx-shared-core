@@ -45,6 +45,18 @@ object TypeExtensions {
 
   implicit class StringExtensions(val s: String) {
 
+    def isJson: Boolean = {
+      try{
+        s.toJson
+        true
+      } catch {
+        case e: Exception =>
+          false
+      }
+    }
+
+    def isNullOrEmpty: Boolean = Option(s).isEmpty || s.trim.isEmpty
+
     def isUuid: Boolean = {
       if (s.isNullOrEmpty) {
         false
@@ -58,7 +70,15 @@ object TypeExtensions {
       }
     }
 
-    def isNullOrEmpty: Boolean = Option(s).isEmpty || s.trim.isEmpty
+    def isXml: Boolean = {
+      try{
+        s.toXml
+        true
+      } catch {
+        case e: Exception =>
+          false
+      }
+    }
 
     def toJson: JValue = {
       parse(s)
