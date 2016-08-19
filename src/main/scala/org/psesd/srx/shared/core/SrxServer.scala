@@ -361,7 +361,11 @@ trait SrxServer extends ServerApp {
             None
           }
         } else {
-          Some(resourcePath)
+          if(resourcePath.isNullOrEmpty) {
+            None
+          } else {
+            Some(resourcePath)
+          }
         }
       } else {
         None
