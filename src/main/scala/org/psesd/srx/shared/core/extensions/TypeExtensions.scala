@@ -37,6 +37,10 @@ object TypeExtensions {
 
   implicit class JValueExtensions(val j: JValue) {
 
+    def toJsonString = {
+      pretty(render(j))
+    }
+
     def toXml: Node = {
       org.json4s.Xml.toXml(j).head
     }

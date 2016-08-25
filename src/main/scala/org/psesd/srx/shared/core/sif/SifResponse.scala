@@ -66,7 +66,7 @@ class SifResponse(timestamp: SifTimestamp,
           error.get.toXml.toJsonString
         } else {
           if(bodyJson.isDefined) {
-            bodyJson.get.toString
+            bodyJson.get.toJsonString
           } else {
             if (bodyXml.isDefined) {
               bodyXml.get.toJsonString
