@@ -53,6 +53,7 @@ class SifResponse(timestamp: SifTimestamp,
     }
   }
 
+  var bodyJson: Option[JValue] = None
   var bodyXml: Option[Node] = None
   var error: Option[SifError] = None
   var statusCode: Int = 0
@@ -64,21 +65,25 @@ class SifResponse(timestamp: SifTimestamp,
         if (error.isDefined) {
           error.get.toXml.toJsonString
         } else {
-          if (bodyXml.isDefined) {
-            bodyXml.get.toJsonString
+          if(bodyJson.isDefined) {
+            bodyJson.get.toString
           } else {
-            if (body.isDefined) {
-              if(body.get.isJson) {
-                body.get
-              } else {
-                if(body.get.isXml) {
-                  body.get.toXml.toJsonString
-                } else {
-                  ""
-                }
-              }
+            if (bodyXml.isDefined) {
+              bodyXml.get.toJsonString
             } else {
-              ""
+              if (body.isDefined) {
+                if (body.get.isJson) {
+                  body.get
+                } else {
+                  if (body.get.isXml) {
+                    body.get.toXml.toJsonString
+                  } else {
+                    ""
+                  }
+                }
+              } else {
+                ""
+              }
             }
           }
         }
@@ -89,18 +94,22 @@ class SifResponse(timestamp: SifTimestamp,
           if (bodyXml.isDefined) {
             bodyXml.get.toXmlString
           } else {
-            if (body.isDefined) {
-              if(body.get.isXml) {
-                body.get
-              } else {
-                if(body.get.isJson) {
-                  body.get.toJson.toXml.toString
-                } else {
-                  ""
-                }
-              }
+            if (bodyJson.isDefined) {
+              bodyJson.get.toXml.toXmlString
             } else {
-              ""
+              if (body.isDefined) {
+                if (body.get.isXml) {
+                  body.get
+                } else {
+                  if (body.get.isJson) {
+                    body.get.toJson.toXml.toString
+                  } else {
+                    ""
+                  }
+                }
+              } else {
+                ""
+              }
             }
           }
         }

@@ -276,7 +276,15 @@ trait SrxServer extends ServerApp {
 
         if(result.success) {
           // only set body if result = success
-          response.sifResponse.bodyXml = result.toXml
+          if(response.srxRequest.accepts.equals(SifContentType.Json)) {
+            response.sifResponse.bodyJson = result.toJson
+            // if response does not implement an explicit JSON serializer, default to XML for auto-serialization
+            if(response.sifResponse.bodyJson.isEmpty) {
+              response.sifResponse.bodyXml = result.toXml
+            }
+          } else {
+            response.sifResponse.bodyXml = result.toXml
+          }
         } else {
           // if internal server error, return a generic response description and log the actual error + stack trace
           if(result.statusCode.equals(SifHttpStatusCode.InternalServerError)) {

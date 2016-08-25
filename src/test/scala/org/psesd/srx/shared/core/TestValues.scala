@@ -1,5 +1,6 @@
 package org.psesd.srx.shared.core
 
+import org.json4s.JValue
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, SrxRequestActionNotAllowedException}
 import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
@@ -41,6 +42,7 @@ object TestValues {
 
   class TestEntityResult(val requestAction: SifRequestAction, val id: String) extends SrxResourceResult {
     statusCode = SifRequestAction.getSuccessStatusCode(requestAction)
+    def toJson: Option[JValue] = None
     def toXml: Option[Node] = Some(<test id={id}/>)
   }
 

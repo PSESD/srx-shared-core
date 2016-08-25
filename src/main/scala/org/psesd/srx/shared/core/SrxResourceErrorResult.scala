@@ -1,5 +1,7 @@
 package org.psesd.srx.shared.core
 
+import org.json4s.JValue
+
 import scala.xml.Node
 
 /** SRX resource construction error result.
@@ -11,6 +13,8 @@ import scala.xml.Node
 class SrxResourceErrorResult(httpStatusCode: Int, exception: Exception) extends SrxResourceResult {
   exceptions += exception
   statusCode = httpStatusCode
+
+  def toJson: Option[JValue] = None
 
   def toXml: Option[Node] = None
 }
