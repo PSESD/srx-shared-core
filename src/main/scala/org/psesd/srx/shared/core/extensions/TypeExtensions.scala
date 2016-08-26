@@ -129,6 +129,12 @@ object TypeExtensions {
       pretty(render(toJson(n)))
     }
 
+    def toJsonStringNoRoot: String = {
+      val rootString = n.toJsonString
+      val rootLabel = n.label
+      rootString.substring(10 + rootLabel.length, rootString.length - 1).trim
+    }
+
     def toXmlString: String = {
       printer.format(n)
     }

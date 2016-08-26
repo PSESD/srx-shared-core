@@ -1,5 +1,6 @@
 package org.psesd.srx.shared.core
 
+import org.json4s.JValue
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
@@ -152,6 +153,10 @@ class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val ti
   var headers: Option[String] = None
   var body: Option[String] = None
   var srxRequest: Option[SrxRequest] = None
+
+  def toJson: JValue = {
+    toXml.toJsonStringNoRoot.toJson
+  }
 
   def toXml: Node = {
     <message>

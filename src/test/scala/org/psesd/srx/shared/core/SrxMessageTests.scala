@@ -350,4 +350,14 @@ class SrxMessageTests extends FunSuite {
     assert(message.body.get.toString.equals(body))
   }
 
+  test("toXml") {
+    val xmlString = SrxMessage(messageXml).toXml.toXmlString
+    assert(xmlString.contains(messageId.toString))
+  }
+
+  test("toJson") {
+    val jsonString = SrxMessage(messageXml).toJson.toJsonString
+    assert(jsonString.contains(messageId.toString))
+  }
+
 }
