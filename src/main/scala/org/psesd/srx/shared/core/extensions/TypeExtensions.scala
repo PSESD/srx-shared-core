@@ -132,7 +132,10 @@ object TypeExtensions {
     def toJsonStringNoRoot: String = {
       val rootString = n.toJsonString
       val rootLabel = n.label
-      rootString.substring(10 + rootLabel.length, rootString.length - 1).trim
+      val delta = {
+        if(rootString.startsWith("{\r\n")) 10 else 8
+      }
+      rootString.substring(delta + rootLabel.length, rootString.length - 1).trim
     }
 
     def toXmlString: String = {
