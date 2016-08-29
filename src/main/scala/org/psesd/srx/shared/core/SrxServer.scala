@@ -212,13 +212,15 @@ trait SrxServer extends ServerApp {
   }
 
   protected def executeRequest(httpRequest: Request,
+                               routeParameters: Option[List[SifRequestParameter]],
                                resourceName: String,
                                service: SrxResourceService
                               ): Task[Response] = {
-    executeRequest(httpRequest, resourceName, service, null)
+    executeRequest(httpRequest, routeParameters, resourceName, service, null)
   }
 
   protected def executeRequest(httpRequest: Request,
+                               routeParameters: Option[List[SifRequestParameter]],
                                resourceName: String,
                                service: SrxResourceService,
                                serviceEntity: (Node) => SrxResource
@@ -229,7 +231,7 @@ trait SrxServer extends ServerApp {
 
     if (!response.hasError) {
       try {
-        val requestParameters = getRequestParameters(httpRequest, resourceName)
+        val requestParameters = getRequestParameters(httpRequest, routeParameters, resourceName)
         var resource: SrxResource = null
         var resourceErrorResult: SrxResourceErrorResult = null
 
@@ -325,8 +327,13 @@ trait SrxServer extends ServerApp {
     "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName)
   }
 
-  private def getRequestParameters(httpRequest: Request, resourceName: String): List[SifRequestParameter] = {
+  private def getRequestParameters(httpRequest: Request, routeParameters: Option[List[SifRequestParameter]], resourceName: String): List[SifRequestParameter] = {
     val parameters = new ArrayBuffer[SifRequestParameter]()
+    if(routeParameters.isDefined) {
+      for(p <- routeParameters.get) {
+        parameters += p
+      }
+    }
     try {
       val resourceId = getResourceId(httpRequest, resourceName)
       if (resourceId.isDefined) {

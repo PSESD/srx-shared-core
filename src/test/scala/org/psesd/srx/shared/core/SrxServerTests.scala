@@ -285,19 +285,19 @@ class SrxServerTests extends FunSuite {
         respondWithInfo(getDefaultSrxResponse(req))
 
       case req@DELETE -> Root / _ if services(req, TestValues.testEntitiesResource) =>
-        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+        executeRequest(req, None, TestValues.testEntitiesResource, TestValues.TestEntityService)
 
       case req@DELETE -> Root / TestValues.testEntitiesResource / _ =>
-        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+        executeRequest(req, None, TestValues.testEntitiesResource, TestValues.TestEntityService)
 
       case req@GET -> Root / TestValues.testEntitiesResource / _ =>
-        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService)
+        executeRequest(req, None, TestValues.testEntitiesResource, TestValues.TestEntityService)
 
       case req@POST -> Root / _ if services(req, TestValues.testEntitiesResource) =>
-        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
+        executeRequest(req, None, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
 
       case req@PUT -> Root / _ if services(req, TestValues.testEntitiesResource) =>
-        executeRequest(req, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
+        executeRequest(req, None, TestValues.testEntitiesResource, TestValues.TestEntityService, TestValues.TestEntity.apply)
 
       case _ =>
         NotFound()
