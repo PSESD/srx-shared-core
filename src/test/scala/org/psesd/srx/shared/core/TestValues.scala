@@ -31,7 +31,7 @@ object TestValues {
   class TestEntity(val id: String) extends SrxResource
 
   object TestEntity {
-    def apply(node: Node): TestEntity = {
+    def apply(node: Node, parameters: Option[List[SifRequestParameter]]): TestEntity = {
       val rootElementName = node.label
       if(rootElementName != "test") {
         throw new ArgumentInvalidException("root element '%s'".format(rootElementName))
