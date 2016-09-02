@@ -75,6 +75,14 @@ trait SrxServer extends ServerApp {
       respondWithInfo(getDefaultSrxResponse(req))
   }
 
+  protected def addRouteParams(param: String*): Option[List[SifRequestParameter]] = {
+    val params = ArrayBuffer[SifRequestParameter]()
+    for (i <- param.indices by 2) {
+      params += SifRequestParameter(param(i), param(i + 1))
+    }
+    Some(params.toList)
+  }
+
   protected def respondWithInfo(srxResponse: SrxResponse): Task[Response] = {
     if (!srxResponse.hasError) {
       try {
