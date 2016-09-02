@@ -92,9 +92,15 @@ trait SrxServer extends ServerApp {
     srxResponse.toHttpResponse
   }
 
-  protected def services(httpRequest: Request, resourceName: String): Boolean = {
+  protected def services(httpRequest: Request, resources: String*): Boolean = {
+    val resourcePath = new StringBuilder()
+    var delimiter = ""
+    for(r <- resources) {
+      resourcePath.append(delimiter + r.toLowerCase())
+      delimiter = "/"
+    }
     val path = httpRequest.pathInfo.toLowerCase
-    val resource = resourceName.toLowerCase
+    val resource = resourcePath.toString
     path.startsWith("/" + resource + ";") ||
       path.startsWith(resource + ";") ||
       path.startsWith("/" + resource + "/") ||
