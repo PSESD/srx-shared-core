@@ -175,11 +175,11 @@ class SifConsumer {
       name.toLowerCase match {
 
         case KeyContentType =>
-          // use startsWith on received values due to some providers sending extra Content-Type parameters in the value, such as UTF encoding
-          if (value.toLowerCase.startsWith(SifContentType.Xml.toString.toLowerCase)) {
+          // use "contains" on received values due to some providers sending extra Content-Type parameters in the value, such as UTF encoding
+          if (value.toLowerCase.contains("xml")) {
             responseContentType = SifContentType.Xml
           }
-          if (value.toLowerCase.startsWith(SifContentType.Json.toString.toLowerCase)) {
+          if (value.toLowerCase.contains("json")) {
             responseContentType = SifContentType.Json
           }
           // if received Content-Type is not supported (not XML or JSON) add an exception to the response (some providers are returning HTML when errors occur on their end)
