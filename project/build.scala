@@ -4,6 +4,7 @@ import sbt._
 object SrxSharedCoreBuild extends Build {
 
   lazy val apacheHttpClientVersion = "4.5.2"
+  lazy val amazonAwsVersion = "1.11.0"
   lazy val http4sVersion = "0.14.1"
   lazy val jodaConvertVersion = "1.8.1"
   lazy val jodaTimeVersion = "2.9.4"
@@ -17,6 +18,7 @@ object SrxSharedCoreBuild extends Build {
       version := "1.0",
       scalaVersion := "2.11.8",
       libraryDependencies ++=Seq(
+        "com.amazonaws" % "aws-java-sdk-s3" % amazonAwsVersion,
         "org.apache.httpcomponents" % "httpclient" % apacheHttpClientVersion,
         "org.http4s" %% "http4s-blaze-client" % http4sVersion,
         "org.http4s" %% "http4s-blaze-server" % http4sVersion,
