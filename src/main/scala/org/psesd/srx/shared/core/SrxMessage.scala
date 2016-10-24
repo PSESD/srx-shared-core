@@ -119,6 +119,10 @@ object SrxMessage {
     message
   }
 
+  def apply(messageXml: Node, parameters: Option[List[SifRequestParameter]]): SrxMessage = {
+    apply(messageXml)
+  }
+
   def fromXmlString(xmlString: String): SrxMessage = SrxMessage(xmlString.toXml)
 
   def fromJsonString(jsonString: String): SrxMessage = SrxMessage(jsonString.toJson.toXml)
