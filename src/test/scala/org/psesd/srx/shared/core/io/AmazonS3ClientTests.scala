@@ -54,6 +54,30 @@ class AmazonS3ClientTests extends FunSuite {
     assert(thrown.getMessage.equals(expected))
   }
 
+  test("default factory") {
+    if (Environment.isLocal) {
+      val client = AmazonS3Client()
+      assert(!client.path.isEmpty)
+      client.shutdown
+    }
+  }
+
+  test("path factory") {
+    if (Environment.isLocal) {
+      val client = AmazonS3Client("testPath")
+      assert(!client.path.isEmpty)
+      client.shutdown
+    }
+  }
+
+  test("bucketName and path factory") {
+    if (Environment.isLocal) {
+      val client = AmazonS3Client("testBucket", "testPath")
+      assert(!client.path.isEmpty)
+      client.shutdown
+    }
+  }
+
   test("can delete") {
     if (Environment.isLocal) {
       val testFileName = "test.xml"

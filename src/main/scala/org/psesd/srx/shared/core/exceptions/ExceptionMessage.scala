@@ -7,6 +7,7 @@ package org.psesd.srx.shared.core.exceptions
   * @author Stephen Pugmire (iTrellis, LLC)
   * */
 object ExceptionMessage {
+  final val AmazonS3Unauthorized = "Amazon S3 connection failed with 403: Forbidden. Check Amazon S3 configuration or environment variables."
   final val IsInvalid = "The %s is invalid."
   final val NotNull = "The %s cannot be null."
   final val NotNullOrEmpty = "The %s cannot be null or empty."

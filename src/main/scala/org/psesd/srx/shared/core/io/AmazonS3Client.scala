@@ -6,7 +6,7 @@ import java.nio.charset.{Charset, CodingErrorAction}
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.s3.model.{AmazonS3Exception, ObjectMetadata}
-import org.psesd.srx.shared.core.config.AmazonS3Config
+import org.psesd.srx.shared.core.config.{AmazonS3Config, Environment}
 import org.psesd.srx.shared.core.exceptions.{ArgumentNullException, ArgumentNullOrEmptyOrWhitespaceException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 
@@ -175,4 +175,30 @@ class AmazonS3Client(val accessKey: String, val secret: String, val socketTimeou
     connection.shutdown
   }
 
+}
+
+object AmazonS3Client {
+  def apply(): AmazonS3Client = {
+    val accessKey = Environment.getProperty(AmazonS3Config.AccessKeyKey)
+    val bucketName = Environment.getProperty(AmazonS3Config.BucketNameKey)
+    val path = Environment.getProperty(AmazonS3Config.PathKey)
+    val secret = Environment.getProperty(AmazonS3Config.SecretKey)
+    val socketTimeout = Environment.getProperty(AmazonS3Config.SocketTimeoutKey).toInt
+    new AmazonS3Client(accessKey, secret, socketTimeout, bucketName, path)
+  }
+
+  def apply(bucketName: String, path: String): AmazonS3Client = {
+    val accessKey = Environment.getProperty(AmazonS3Config.AccessKeyKey)
+    val secret = Environment.getProperty(AmazonS3Config.SecretKey)
+    val socketTimeout = Environment.getProperty(AmazonS3Config.SocketTimeoutKey).toInt
+    new AmazonS3Client(accessKey, secret, socketTimeout, bucketName, path)
+  }
+
+  def apply(path: String): AmazonS3Client = {
+    val accessKey = Environment.getProperty(AmazonS3Config.AccessKeyKey)
+    val bucketName = Environment.getProperty(AmazonS3Config.BucketNameKey)
+    val secret = Environment.getProperty(AmazonS3Config.SecretKey)
+    val socketTimeout = Environment.getProperty(AmazonS3Config.SocketTimeoutKey).toInt
+    new AmazonS3Client(accessKey, secret, socketTimeout, bucketName, path)
+  }
 }
