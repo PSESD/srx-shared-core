@@ -322,7 +322,7 @@ trait SrxServer extends ServerApp {
               result.exceptions.head.getMessage
             ))
           }
-          logError(LogLevel.Debug, requestAction, resourceName, response.srxRequest, null)
+          logError(LogLevel.Debug, requestAction, resourceName, response.srxRequest, result.exceptions.head)
         }
       } catch {
         case e: Exception =>
