@@ -8,6 +8,7 @@ import org.http4s.{HttpService, Request, Response}
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, SifRequestNotAuthorizedException}
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
+import org.psesd.srx.shared.core.logging.LogLevel.LogLevel
 import org.psesd.srx.shared.core.logging.{LogLevel, Logger}
 import org.psesd.srx.shared.core.sif.SifRequestAction.SifRequestAction
 import org.psesd.srx.shared.core.sif._
@@ -312,7 +313,6 @@ trait SrxServer extends ServerApp {
               getResourceErrorTitle(requestAction, resourceName),
               InternalServerErrorDescription
             ))
-            logInternalServerError(requestAction, resourceName, response.srxRequest, result.exceptions.head)
           } else {
             // for all other errors return the message set by service result
             response.setError(new SifError(
@@ -322,6 +322,7 @@ trait SrxServer extends ServerApp {
               result.exceptions.head.getMessage
             ))
           }
+          logError(LogLevel.Debug, requestAction, resourceName, response.srxRequest, null)
         }
       } catch {
         case e: Exception =>
@@ -332,7 +333,7 @@ trait SrxServer extends ServerApp {
             getResourceErrorTitle(requestAction, resourceName),
             InternalServerErrorDescription
           ))
-          logInternalServerError(requestAction, resourceName, response.srxRequest, e)
+          logError(LogLevel.Error, requestAction, resourceName, response.srxRequest, e)
       }
     }
 
@@ -415,12 +416,12 @@ trait SrxServer extends ServerApp {
     }
   }
 
-  private def logInternalServerError(requestAction: SifRequestAction, resourceName: String, srxRequest: SrxRequest, e: Exception): Unit = {
+  private def logError(logLevel: LogLevel, requestAction: SifRequestAction, resourceName: String, srxRequest: SrxRequest, e: Exception): Unit = {
     if(e != null) {
       srxRequest.errorMessage = Some(e.getMessage)
       srxRequest.errorStackTrace = Some(e.getFormattedStackTrace)
     }
-    Logger.log(LogLevel.Error, SrxMessage(
+    Logger.log(logLevel, SrxMessage(
       srxService,
       Some(resourceName),
       None,
