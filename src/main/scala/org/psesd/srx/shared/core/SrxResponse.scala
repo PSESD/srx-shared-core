@@ -31,6 +31,7 @@ class SrxResponse(val srxRequest: SrxRequest) {
   def toHttpResponse: Task[Response] = {
     val httpStatus = Status.fromInt(sifResponse.statusCode).valueOr(null)
     var httpHeaders = Headers(
+      Raw(CaseInsensitiveString("Access-Control-Allow-Origin"), "*"),
       getHttpContentType,
       Raw(CaseInsensitiveString(SifHeader.Timestamp.toString), sifResponse.timestamp.toString),
       Raw(CaseInsensitiveString(SifHeader.MessageId.toString), sifResponse.messageId.toString)
