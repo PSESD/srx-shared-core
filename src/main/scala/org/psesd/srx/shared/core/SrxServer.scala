@@ -364,6 +364,10 @@ trait SrxServer extends ServerApp {
       if (resourceId.isDefined) {
         parameters += SifRequestParameter("id", resourceId.get)
       }
+      val responseFormat = httpRequest.headers.find(h => h.name.value.toLowerCase() == "responseformat")
+      if (responseFormat.isDefined) {
+        parameters += SifRequestParameter("ResponseFormat", responseFormat.get.value)
+      }
       val queryString = httpRequest.queryString
       if (!queryString.isNullOrEmpty) {
         val pairs = queryString.split("&")
