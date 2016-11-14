@@ -3,9 +3,10 @@ package org.psesd.srx.shared.core.extensions
 import java.io.{PrintWriter, StringWriter}
 import java.util.UUID
 
-import org.json4s.JValue
 import org.json4s.Xml.toJson
 import org.json4s.jackson.JsonMethods._
+import org.json4s._
+import org.json4s.JsonDSL._
 import org.psesd.srx.shared.core.exceptions.ArgumentNullOrEmptyOrWhitespaceException
 
 import scala.xml.{Node, NodeSeq, XML}
@@ -42,7 +43,12 @@ object TypeExtensions {
     }
 
     def toXml: Node = {
-      org.json4s.Xml.toXml(j).head
+      if(j.children.length == 1 && j.children.head.getClass.getTypeName.endsWith("JObject")) {
+        org.json4s.Xml.toXml(j).head
+      } else {
+        // if no root object wrapper exists, add one so resulting xml is wrapped in a single <root> element
+        org.json4s.Xml.toXml("root" -> j).head
+      }
     }
 
   }
