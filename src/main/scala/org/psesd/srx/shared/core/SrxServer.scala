@@ -335,6 +335,8 @@ trait SrxServer extends ServerApp {
           ))
           logError(LogLevel.Error, requestAction, resourceName, response.srxRequest, e)
       }
+    } else {
+      logError(LogLevel.Debug, requestAction, resourceName, response.srxRequest, new Exception(response.sifResponse.error.get.description))
     }
 
     response.toHttpResponse
