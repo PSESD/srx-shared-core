@@ -62,6 +62,7 @@ class SifRequest(provider: SifProvider,
   var messageId: Option[SifMessageId] = None
   var messageType: Option[SifMessageType] = Option(SifMessageType.Request)
   var queueId: Option[String] = None
+  var receivedUri: Option[String] = None
   var requestAction: Option[SifRequestAction] = None
   var requestType: Option[SifRequestType] = Option(SifRequestType.Immediate)
 

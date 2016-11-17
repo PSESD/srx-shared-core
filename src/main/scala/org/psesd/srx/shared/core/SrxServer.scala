@@ -123,6 +123,7 @@ trait SrxServer extends ServerApp {
     try {
       val srxRequest = SrxRequest(sifProvider, httpRequest)
       srxResponse = new SrxResponse(srxRequest)
+      srxResponse.sifResponse.sifRequest.receivedUri = Some("%s%s".format(sifProvider.url.toString, httpRequest.pathInfo))
       srxResponse.sifResponse.statusCode = SifHttpStatusCode.Ok
     } catch {
       case ae: SifRequestNotAuthorizedException =>
@@ -150,6 +151,7 @@ trait SrxServer extends ServerApp {
     val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
     try {
       sifRequest.accept = sifRequest.getContentType(getHeaderValue(httpRequest, SifHeader.Accept.toString))
+      sifRequest.receivedUri = Some("%s%s".format(sifProvider.url.toString, httpRequest.pathInfo))
       sifRequest.requestAction = sifRequest.getRequestAction(getHeaderValue(httpRequest, SifHeader.RequestAction.toString), httpRequest.method.name)
       sifRequest.requestId = getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
       sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))

@@ -246,7 +246,11 @@ class SrxMessage(val srxService: SrxService, val messageId: SifMessageId, val ti
 
   def getUri: String = {
     if (uri.isEmpty && srxRequest.isDefined) {
-      srxRequest.get.sifRequest.getUri.toString
+      if(srxRequest.get.sifRequest.receivedUri.isDefined) {
+        srxRequest.get.sifRequest.receivedUri.get
+      } else {
+        srxRequest.get.sifRequest.getUri.toString
+      }
     } else {
       uri.getOrElse("")
     }
