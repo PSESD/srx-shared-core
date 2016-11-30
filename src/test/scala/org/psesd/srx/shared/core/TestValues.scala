@@ -58,6 +58,10 @@ object TestValues {
     }
 
     def query(parameters: List[SifRequestParameter]): SrxResourceResult = {
+      for(p <- parameters) {
+        println("PARAM %s = %s".format(p.key, p.value))
+      }
+
       val id = getIdFromRequestParameters(parameters)
       new TestEntityResult(SifRequestAction.Query, id.getOrElse(""))
     }

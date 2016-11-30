@@ -151,7 +151,7 @@ trait SrxServer extends ServerApp {
     val sifRequest = new SifRequest(sifProvider, "", SifZone(), SifContext(), SifTimestamp())
     try {
       sifRequest.accept = sifRequest.getContentType(getHeaderValue(httpRequest, SifHeader.Accept.toString))
-      sifRequest.receivedUri = Some("%s%s".format(sifProvider.url.toString, httpRequest.pathInfo))
+      sifRequest.receivedUri = Some(getRequestUri(httpRequest))
       sifRequest.requestAction = sifRequest.getRequestAction(getHeaderValue(httpRequest, SifHeader.RequestAction.toString), httpRequest.method.name)
       sifRequest.requestId = getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
       sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
@@ -178,6 +178,10 @@ trait SrxServer extends ServerApp {
     } else {
       header.value
     }
+  }
+
+  private def getRequestUri(httpRequest: Request): String = {
+    "%s%s".format(sifProvider.url.toString, httpRequest.pathInfo)
   }
 
   private def setEnvironmentVariables(): Unit = {
@@ -344,6 +348,15 @@ trait SrxServer extends ServerApp {
     response.toHttpResponse
   }
 
+  private def getHeaderParameter(httpRequest: Request, parameterName: String): Option[SifRequestParameter] = {
+    val header = httpRequest.headers.find(h => h.name.value.toLowerCase() == parameterName.toLowerCase())
+    if (header.isDefined) {
+      Some(SifRequestParameter(parameterName, header.get.value))
+    } else {
+      None
+    }
+  }
+
   private def getResourceErrorTitle(requestAction: SifRequestAction, resourceName: String): String = {
     "Failed to %s %s.".format(requestAction.toString.toLowerCase, resourceName)
   }
@@ -368,10 +381,34 @@ trait SrxServer extends ServerApp {
       if (resourceId.isDefined) {
         parameters += SifRequestParameter("id", resourceId.get)
       }
-      val responseFormat = httpRequest.headers.find(h => h.name.value.toLowerCase() == "responseformat")
+
+      val responseFormat = getHeaderParameter(httpRequest, "ResponseFormat")
       if (responseFormat.isDefined) {
-        parameters += SifRequestParameter("ResponseFormat", responseFormat.get.value)
+        parameters += responseFormat.get
       }
+
+      val generatorId = getHeaderParameter(httpRequest, SifHeader.GeneratorId.toString())
+      if (generatorId.isDefined) {
+        parameters += generatorId.get
+      }
+
+      val requestId = getHeaderParameter(httpRequest, SifHeader.RequestId.toString())
+      if (requestId.isDefined) {
+        parameters += requestId.get
+      }
+
+      val sourceIp = getHeaderParameter(httpRequest, SifHttpHeader.ForwardedFor.toString())
+      if (sourceIp.isDefined) {
+        parameters += sourceIp.get
+      }
+
+      val userAgent = getHeaderParameter(httpRequest, SifHttpHeader.UserAgent.toString())
+      if (userAgent.isDefined) {
+        parameters += userAgent.get
+      }
+
+      parameters += SifRequestParameter("uri", getRequestUri(httpRequest))
+
       val queryString = httpRequest.queryString
       if (!queryString.isNullOrEmpty) {
         val pairs = queryString.split("&")

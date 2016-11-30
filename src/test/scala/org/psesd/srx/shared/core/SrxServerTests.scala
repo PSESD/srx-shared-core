@@ -236,6 +236,18 @@ class SrxServerTests extends FunSuite {
     }
   }
 
+  test("query with extra parameters") {
+    if(Environment.isLocal) {
+      val sifRequest = new SifRequest(TestValues.sifProvider, TestValues.testEntitiesResource + "/1")
+      sifRequest.generatorId = Some("hello")
+      sifRequest.requestId = Some("world")
+      val response = new SifConsumer().query(sifRequest)
+      printlnResponse(response)
+      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
+      assert(response.getBody(SifContentType.Xml).equals("<test id=\"1\"/>"))
+    }
+  }
+
   private def delayedInterrupt(delay: Long) {
     delayedInterrupt(Thread.currentThread, delay)
   }
