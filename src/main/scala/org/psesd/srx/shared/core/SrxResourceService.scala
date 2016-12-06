@@ -18,10 +18,14 @@ trait SrxResourceService {
   def update(resource: SrxResource, parameters: List[SifRequestParameter]): SrxResourceResult
 
   def getIdFromRequestParameters(parameters: List[SifRequestParameter]): Option[String] = {
+    getRequestParameter(parameters, "id")
+  }
+
+  def getRequestParameter(parameters: List[SifRequestParameter], name: String): Option[String] = {
     if (parameters != null && parameters.nonEmpty) {
-      val idParameter = parameters.find(p => p.key.toLowerCase == "id").orNull
-      if (idParameter != null) {
-        Some(idParameter.value)
+      val parameter = parameters.find(p => p.key.toLowerCase == name.toLowerCase()).orNull
+      if (parameter != null) {
+        Some(parameter.value)
       } else {
         None
       }
