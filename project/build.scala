@@ -11,6 +11,8 @@ object SrxSharedCoreBuild extends Build {
   lazy val json4sVersion = "3.4.0"
   lazy val scalaTestVersion = "2.2.6"
   lazy val slf4jVersion = "1.7.5"
+  lazy val apacheCommonsVersion = "2.1"
+  lazy val apachePoiVersion = "3.14"
 
   lazy val project = Project("srx-shared-core", file("."))
     .settings(
@@ -19,7 +21,9 @@ object SrxSharedCoreBuild extends Build {
       scalaVersion := "2.11.8",
       libraryDependencies ++=Seq(
         "com.amazonaws" % "aws-java-sdk-s3" % amazonAwsVersion,
+        "org.apache.commons" % "commons-vfs2" % apacheCommonsVersion,
         "org.apache.httpcomponents" % "httpclient" % apacheHttpClientVersion,
+        "org.apache.poi" % "poi" % apachePoiVersion,
         "org.http4s" %% "http4s-blaze-client" % http4sVersion,
         "org.http4s" %% "http4s-blaze-server" % http4sVersion,
         "org.http4s" %% "http4s-dsl" % http4sVersion,

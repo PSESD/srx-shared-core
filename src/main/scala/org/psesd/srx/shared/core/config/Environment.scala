@@ -71,6 +71,8 @@ object Environment {
     properties.getProperty(key, null)
   }
 
+  def isLocalOrDevelopment: Boolean = name.equals(Local) || name.equals(Development)
+
   private def loadProperties(fileName: String): Unit = {
     properties = new java.util.Properties()
     val propertiesFile = new File(fileName)

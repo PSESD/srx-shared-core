@@ -7,11 +7,11 @@ import org.scalatest.FunSuite
 
 class AmazonS3ClientTests extends FunSuite {
   val environment = Environment.name
-  val accessKey = Environment.getProperty(AmazonS3Config.AccessKeyKey)
-  val bucketName = Environment.getProperty(AmazonS3Config.BucketNameKey)
-  val path = Environment.getProperty(AmazonS3Config.PathKey)
-  val secret = Environment.getProperty(AmazonS3Config.SecretKey)
-  val socketTimeout = Environment.getProperty(AmazonS3Config.SocketTimeoutKey).toInt
+  val accessKey = Environment.getProperty("SRX_TEST_AMAZON_S3_ACCESS_KEY")
+  val bucketName = Environment.getProperty("SRX_TEST_AMAZON_S3_BUCKET_NAME")
+  val path = Environment.getProperty("SRX_TEST_AMAZON_S3_PATH")
+  val secret = Environment.getProperty("SRX_TEST_AMAZON_S3_SECRET")
+  val socketTimeout = Environment.getProperty("SRX_TEST_AMAZON_S3_TIMEOUT").toInt
   val testClient = new AmazonS3Client(accessKey, secret, socketTimeout, bucketName, path)
   val invalidClient = new AmazonS3Client(new AmazonS3Config(
     <amazonS3>
