@@ -13,6 +13,7 @@ object SifHeader extends ExtendedEnumeration {
   val Accept = Value("accept")
   val Authorization = Value("authorization")
   val GeneratorId = Value("generatorId")
+  val Iv = Value("x-psesd-iv")
   val MessageId = Value("messageId")
   val MessageType = Value("messageType")
   val QueueId = Value("queueId")

@@ -182,7 +182,7 @@ class SrxServerTests extends FunSuite {
       printlnResponse(response)
       assert(response.statusCode.equals(SifHttpStatusCode.BadRequest))
       assert(response.getBody(SifContentType.Xml).contains("<message>Failed to create testEntities.</message>"))
-      assert(response.getBody(SifContentType.Xml).contains("<description>The request body XML is invalid.</description>"))
+      assert(response.getBody(SifContentType.Xml).contains("<description>The x-psesd-iv header cannot be null, empty, or whitespace.</description>"))
     }
   }
 

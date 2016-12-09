@@ -244,7 +244,7 @@ trait SrxServer extends ServerApp {
                                routeParameters: Option[List[SifRequestParameter]],
                                resourceName: String,
                                service: SrxResourceService,
-                               serviceEntity: (Node, Option[List[SifRequestParameter]]) => SrxResource
+                               serviceEntity: (SrxRequestBody, Option[List[SifRequestParameter]]) => SrxResource
                               ): Task[Response] = {
     val response = getDefaultSrxResponse(httpRequest)
 
@@ -265,7 +265,7 @@ trait SrxServer extends ServerApp {
 
           case SifRequestAction.Create =>
             try {
-              resource = serviceEntity(response.srxRequest.getBodyXml.orNull, Some(requestParameters))
+              resource = serviceEntity(new SrxRequestBody(response.srxRequest), Some(requestParameters))
             } catch {
               case e: Exception =>
                 resourceErrorResult = SrxResourceErrorResult(SifHttpStatusCode.BadRequest, e)
@@ -281,7 +281,7 @@ trait SrxServer extends ServerApp {
 
           case SifRequestAction.Update =>
             try {
-              resource = serviceEntity(response.srxRequest.getBodyXml.orNull, Some(requestParameters))
+              resource = serviceEntity(new SrxRequestBody(response.srxRequest), Some(requestParameters))
             } catch {
               case e: Exception =>
                 resourceErrorResult = SrxResourceErrorResult(SifHttpStatusCode.BadRequest, e)
