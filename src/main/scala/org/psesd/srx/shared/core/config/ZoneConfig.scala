@@ -19,7 +19,7 @@ class ZoneConfig(val zoneId: String, serviceName: String) {
     throw new ArgumentNullOrEmptyOrWhitespaceException("serviceName")
   }
 
-  private val zoneConfigXml = getZoneConfigXml(serviceName)
+  val zoneConfigXml = getZoneConfigXml(serviceName)
 
   // nav to resource type="xSRE" and grab config data
   private val xsreConfigXml = (zoneConfigXml.get \ "resource").find(r => (r \ "@type").text.toLowerCase() == "xsre")

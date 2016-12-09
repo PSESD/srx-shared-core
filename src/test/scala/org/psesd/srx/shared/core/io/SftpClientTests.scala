@@ -25,7 +25,7 @@ class SftpClientTests extends FunSuite {
     )
     val client = new SftpClient(testConfig)
     assert(client.write("test.xml", "<xml/>".getBytes))
-    assert(client.exists("text.xml"))
+    assert(client.exists("test.xml"))
   }
 
 }
