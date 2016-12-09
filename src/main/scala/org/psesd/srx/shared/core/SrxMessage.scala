@@ -119,8 +119,8 @@ object SrxMessage {
     message
   }
 
-  def apply(messageXml: Node, parameters: Option[List[SifRequestParameter]]): SrxMessage = {
-    apply(messageXml)
+  def apply(requestBody: SrxRequestBody, parameters: Option[List[SifRequestParameter]]): SrxMessage = {
+    apply(requestBody.getXml.get)
   }
 
   def fromXmlString(xmlString: String): SrxMessage = SrxMessage(xmlString.toXml)

@@ -133,7 +133,6 @@ class SrxRequestBodyTests extends FunSuite {
     val srxRequest = getRequest(testBodyJson, testIv, SifContentType.Json.toString)
     val srxRequestBody = new SrxRequestBody(srxRequest)
     val bodyXml = srxRequestBody.getXml.get
-    val foo = bodyXml.text
     assert(bodyXml.text.equals(testBodyValue))
   }
 
