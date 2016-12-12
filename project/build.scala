@@ -6,6 +6,7 @@ object SrxSharedCoreBuild extends Build {
   lazy val apacheHttpClientVersion = "4.5.2"
   lazy val amazonAwsVersion = "1.11.0"
   lazy val http4sVersion = "0.14.1"
+  lazy val jcraftVersion = "0.1.54"
   lazy val jodaConvertVersion = "1.8.1"
   lazy val jodaTimeVersion = "2.9.4"
   lazy val json4sVersion = "3.4.0"
@@ -21,6 +22,7 @@ object SrxSharedCoreBuild extends Build {
       scalaVersion := "2.11.8",
       libraryDependencies ++=Seq(
         "com.amazonaws" % "aws-java-sdk-s3" % amazonAwsVersion,
+        "com.jcraft" % "jsch" % jcraftVersion,
         "org.apache.commons" % "commons-vfs2" % apacheCommonsVersion,
         "org.apache.httpcomponents" % "httpclient" % apacheHttpClientVersion,
         "org.apache.poi" % "poi" % apachePoiVersion,
