@@ -4,6 +4,8 @@ import org.psesd.srx.shared.core.exceptions.{ArgumentNullOrEmptyOrWhitespaceExce
 import org.psesd.srx.shared.core.extensions.TypeExtensions._
 import org.psesd.srx.shared.core.sif._
 
+import scala.xml.Node
+
 /** Represents zone-specific configuration and xSRE schema.
   *
   * @version 1.0
@@ -19,20 +21,9 @@ class ZoneConfig(val zoneId: String, serviceName: String) {
     throw new ArgumentNullOrEmptyOrWhitespaceException("serviceName")
   }
 
-  private val zoneConfigXml = getZoneConfigXml(serviceName)
+  val zoneConfigXml: Node = getZoneConfigXml(serviceName)
 
-  // nav to resource type="xSRE" and grab config data
-  private val xsreConfigXml = (zoneConfigXml.get \ "resource").find(r => (r \ "@type").text.toLowerCase() == "xsre")
-  if(xsreConfigXml.isEmpty) {
-    throw new EnvironmentException("XSRE configuration missing for zone '%s'.".format(zoneId))
-  }
-
-  val cacheBucketName: String = (xsreConfigXml.get \ "cache" \ "bucketName").textRequired("cache.bucketName")
-  val cachePath: String = (xsreConfigXml.get \ "cache" \ "path").textRequired("cache.path")
-  val schemaPath: String = (xsreConfigXml.get \ "schema" \ "path").textRequired("schema.path")
-  val schemaRootFileName: String = (xsreConfigXml.get \ "schema" \ "rootFileName").textRequired("schema.rootFileName")
-
-  def getZoneConfigXml(serviceName: String) = {
+  private def getZoneConfigXml(serviceName: String) = {
     val resource = "%s/%s".format("srxZoneConfig", zoneId)
     val sifRequest = new SifRequest(Environment.srxProvider, resource)
     sifRequest.requestId = Some(SifMessageId().toString)
@@ -47,7 +38,10 @@ class ZoneConfig(val zoneId: String, serviceName: String) {
     if(zoneConfigXml.isEmpty) {
       throw new EnvironmentException("Configuration missing for zone '%s'.".format(zoneId))
     }
+    if((zoneConfigXml.get \ "description").nonEmpty) {
+      throw new EnvironmentException((zoneConfigXml.get \ "description").text)
+    }
 
-    zoneConfigXml
+    zoneConfigXml.get
   }
 }
