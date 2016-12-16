@@ -94,7 +94,7 @@ class SifRequest(provider: SifProvider,
       if (value.toLowerCase.contains("json")) {
         Option(SifContentType.Json)
       } else {
-        if (value.toLowerCase.contains("xml")) {
+        if (value.toLowerCase.contains("xml") || value.toLowerCase.contains("text/plain")) {
           Option(SifContentType.Xml)
         } else {
           None
