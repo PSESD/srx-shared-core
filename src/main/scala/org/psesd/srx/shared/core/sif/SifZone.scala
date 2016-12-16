@@ -20,7 +20,7 @@ class SifZone(zoneId: String) {
 }
 
 object SifZone {
-  final val Default = "DEFAULT"
+  final val Default = "default"
 
   def apply(): SifZone = new SifZone(Default)
 

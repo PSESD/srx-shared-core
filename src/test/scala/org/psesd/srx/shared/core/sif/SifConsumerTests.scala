@@ -151,7 +151,7 @@ class SifConsumerTests extends FunSuite {
     assert(response.body.orNull.length > 0)
   }
 
-  test("query valid xSRE") {
+  ignore("query valid xSRE") {
     val requestId = "1234"
     val serviceType = SifServiceType.Object
     val accept = SifContentType.Xml
@@ -170,6 +170,10 @@ class SifConsumerTests extends FunSuite {
     sifRequest.messageType = Option(messageType)
     sifRequest.requestAction = Option(requestAction)
     sifRequest.requestType = Option(requestType)
+    sifRequest.addHeader("authorizedEntityId", "2")
+    sifRequest.addHeader("externalServiceId", "5")
+    sifRequest.addHeader("districtStudentId", "sample1")
+    sifRequest.addHeader("objectType", "xSre")
 
     val response = SifConsumer().query(sifRequest)
     assert(response.statusCode.equals(SifHttpStatusCode.Ok))
@@ -177,7 +181,7 @@ class SifConsumerTests extends FunSuite {
     assert(response.body.get.contains("sample1"))
   }
 
-  test("query invalid xSRE") {
+  ignore("query invalid xSRE") {
     val requestId = "1234"
     val serviceType = SifServiceType.Object
     val accept = SifContentType.Xml
