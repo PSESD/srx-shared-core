@@ -51,7 +51,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     val itemBody = new body(itemMessage)
     val itemServer = new server(serverName)
     val itemRequest = getRequest(srxMessage)
-    val itemData = new data(itemBody, timestamp, itemId, "scala", itemRequest, Environment.name, title, lowerCaseLevel, version, itemServer)
+    val itemData = new data(itemBody, timestamp, itemId, "scala", itemRequest, Environment.name, title, lowerCaseLevel, version, itemServer, if(title.length > 40) title.substring(0,40) else title);
     val item = new json(rollbarAccessToken, itemData)
 
     val itemJson = write(item)
@@ -142,7 +142,7 @@ class RollbarMessage(srxMessage: SrxMessage, logLevel: LogLevel) {
     * @param server       the `server` portion of a Rollbar JSON payload.
     * @return a new `data` instance.
     * */
-  private case class data(body: body, timestamp: Long, uuid: String, framework: String, request: request, environment: String, title: String, level: String, code_version: String, server: server)
+  private case class data(body: body, timestamp: Long, uuid: String, framework: String, request: request, environment: String, title: String, level: String, code_version: String, server: server, fingerprint: String)
 
   /** Top-level portion of a Rollbar JSON payload.
     *

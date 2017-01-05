@@ -155,6 +155,10 @@ trait SrxServer extends ServerApp {
       sifRequest.requestAction = sifRequest.getRequestAction(getHeaderValue(httpRequest, SifHeader.RequestAction.toString), httpRequest.method.name)
       sifRequest.requestId = getHeaderValueOption(httpRequest, SifHeader.RequestId.toString)
       sifRequest.serviceType = SifServiceType.withNameCaseInsensitiveOption(getHeaderValue(httpRequest, SifHeader.ServiceType.toString))
+      // add all received header values
+      for (h <- httpRequest.headers) {
+        sifRequest.addHeader(h.name.value, h.value)
+      }
     } catch {
       case _: Throwable =>
     }
