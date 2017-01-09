@@ -119,7 +119,7 @@ class SifConsumerTests extends FunSuite {
     }
   }
 
-  test("query PRS filters") {
+  ignore("query PRS filters") {
     val requestId = "1234"
     val serviceType = SifServiceType.Object
     val accept = SifContentType.Xml
@@ -151,7 +151,7 @@ class SifConsumerTests extends FunSuite {
     assert(response.body.orNull.length > 0)
   }
 
-  test("query valid xSRE") {
+  ignore("query valid xSRE") {
     val requestId = "1234"
     val serviceType = SifServiceType.Object
     val accept = SifContentType.Xml
