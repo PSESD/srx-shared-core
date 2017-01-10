@@ -7,16 +7,16 @@ class SrxMessageServiceTests extends FunSuite {
 
   val messageId = SifMessageId()
   val timestamp = SifTimestamp()
-  val resource = "xSre"
-  val method = "QUERY"
-  val status = "status"
+  val resource = SrxResourceType.Xsres.toString
+  val method = SifRequestAction.Query.toString
+  val status = SrxMessageStatus.Success.toString
   val generatorId = "generatorId"
   val requestId = "requestId"
   val zone = SifZone()
   val context = SifContext()
   val studentId = "studentId"
   val description = "description"
-  val uri = "https://localhost/xSre;zoneId=DEFAULT;contextId=DEFAULT"
+  val uri = "https://localhost/%s;zoneId=DEFAULT;contextId=DEFAULT".format(SrxResourceType.Xsres.toString)
   val userAgent = "userAgent"
   val sourceIp = "sourceIp"
   val body = "body"
