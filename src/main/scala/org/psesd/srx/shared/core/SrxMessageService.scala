@@ -13,7 +13,7 @@ import org.psesd.srx.shared.core.sif._
 object SrxMessageService {
 
   def createMessage(generatorId: String, srxMessage: SrxMessage): SifResponse = {
-    val sifRequest = new SifRequest(Environment.srxProvider, CoreResource.SrxMessages.toString)
+    val sifRequest = new SifRequest(Environment.srxProvider, SrxResourceType.SrxMessages.toString)
     sifRequest.requestId = Some(SifMessageId().toString)
     sifRequest.generatorId = Some(generatorId)
     sifRequest.contentType = Some(SifContentType.Json)

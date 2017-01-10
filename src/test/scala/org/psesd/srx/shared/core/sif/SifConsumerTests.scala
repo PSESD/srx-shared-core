@@ -1,6 +1,6 @@
 package org.psesd.srx.shared.core.sif
 
-import org.psesd.srx.shared.core.CoreResource
+import org.psesd.srx.shared.core.SrxResourceType
 import org.psesd.srx.shared.core.config.Environment
 import org.psesd.srx.shared.core.exceptions.{ArgumentInvalidException, ExceptionMessage}
 import org.scalatest.FunSuite
@@ -211,7 +211,7 @@ class SifConsumerTests extends FunSuite {
   }
 
   test("create empty body") {
-    val sifRequest = new SifRequest(Environment.srxProvider, CoreResource.SrxMessages.toString)
+    val sifRequest = new SifRequest(Environment.srxProvider, SrxResourceType.SrxMessages.toString)
     val thrown = intercept[ArgumentInvalidException] {
       SifConsumer().create(sifRequest)
     }
@@ -219,7 +219,7 @@ class SifConsumerTests extends FunSuite {
   }
 
   test("update empty body") {
-    val sifRequest = new SifRequest(Environment.srxProvider, CoreResource.SrxMessages.toString)
+    val sifRequest = new SifRequest(Environment.srxProvider, SrxResourceType.SrxMessages.toString)
     val thrown = intercept[ArgumentInvalidException] {
       SifConsumer().update(sifRequest)
     }
