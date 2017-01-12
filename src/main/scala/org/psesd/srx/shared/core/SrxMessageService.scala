@@ -26,4 +26,43 @@ object SrxMessageService {
     new SifConsumer().create(sifRequest)
   }
 
+  def createRequestMessage(method: String,
+                           zoneId: String,
+                           studentId: String,
+                           parameters: SifRequestParameterCollection,
+                           service: SrxService,
+                           resource: Option[String],
+                           requestBody: Option[String]
+                          ):SifResponse = {
+
+    val message = SrxMessage(
+      service,
+      SifMessageId(),
+      SifTimestamp(),
+      resource,
+      Some(method),
+      Some(SrxMessageStatus.Success.toString),
+      parameters("generatorId"),
+      parameters("requestId"),
+      Some(SifZone(zoneId)), {
+        if (parameters("contextId").isDefined) Some(SifContext(parameters("contextId").get)) else None
+      },
+      Some(studentId),
+      "%s successful for student '%s' in zone '%s'.".format(method, studentId, zoneId),
+      parameters("uri"),
+      parameters("userAgent"),
+      parameters("sourceIp"),
+      Some(parameters.getHeaders()),
+      requestBody
+    )
+
+    createMessage(parameters("generatorId").get, message)
+  }
+
+  def queryMessage(resource: String, zone: SifZone, context: SifContext): SifResponse = {
+    val sifRequest = new SifRequest(Environment.srxProvider, resource, zone, context)
+    sifRequest.accept = Some(SifContentType.Xml)
+
+    new SifConsumer().query(sifRequest)
+  }
 }
