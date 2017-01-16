@@ -25,9 +25,11 @@ class SifRequestParameterCollection(params: List[SifRequestParameter]) {
   def getHeaders(): String = {
       val sb = new StringBuilder("")
       var sep = ""
-      for (p <- parameters) {
-        sb.append("%s%s=%s".format(sep, p.key, p.value))
-        sep = ";"
+      if (parameters != null) {
+        for (p <- parameters) {
+          sb.append("%s%s=%s".format(sep, p.key, p.value))
+          sep = ";"
+        }
       }
       sb.toString
   }
