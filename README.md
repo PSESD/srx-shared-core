@@ -15,25 +15,30 @@ Following is a description of each variable:
 
 Variable 					            | Description 																									| Example
 --------- 					            | ----------- 																									| -------
-AES_PASSWORD                            |                                                                                                               |
-AES_SALT                                |                                                                                                               |
-AMAZON_S3_ACCESS_KEY                    |                                                                                                               |
-AMAZON_S3_BUCKET_NAME                   | Amazon file store bucket name                                                                                 | adapter-bucket
-AMAZON_S3_PATH                          |                                                                                                               | dev
-AMAZON_S3_SECRET                        |                                                                                                               |
-AMAZON_S3_TIMEOUT                       |                                                                                                               | 300000
+AES_PASSWORD                            | Password used to decrypt AES encrypted request body payloads.                                                 | (see Heroku)                                                                                                        |
+AES_SALT                                | Salt used to decrypt AES encrypted request body payloads.                                                     | (see Heroku)                                                                                                     |
+AMAZON_S3_ACCESS_KEY                    | AWS S3 access key for SRX cache.                                                                              | (see Heroku)
+AMAZON_S3_BUCKET_NAME                   | AWS S3 bucket name for SRX cache.                                                                             | (see Heroku)
+AMAZON_S3_PATH                          | Root path to files within SRX cache.                                                                          | (see Heroku)
+AMAZON_S3_SECRET                        | AWS S3 secret for SRX cache.                                                                                  | (see Heroku)
+AMAZON_S3_TIMEOUT                       | Timeout for AWS S3 connections.                                                                               | 300000
 ENVIRONMENT 				            | Name of deployment environment (i.e. development, test, production). Set to 'local' for local development.	| local
-ENVIRONMENT_PROVIDER_SESSION_TOKEN 		| Session token for SIF Environment Provider requests.													        | (see PSESD administrator)
-ENVIRONMENT_PROVIDER_SHARED_SECRET 		| Shared secret for SIF Environment Provider requests.													        | (see PSESD administrator)
-ENVIRONMENT_PROVIDER_URL 		        | Url for SIF Environment provider requests.													                | https://psesd.hostedzone.com/svcs/dev/requestProvider
 LOG_LEVEL 					            | Level of logging for named environment (debug, info, warning, error, critical).								| debug
 ROLLBAR_ACCESS_TOKEN 		            | Access token for Rollbar web service (required by Logger).													| (see PSESD administrator)
 ROLLBAR_URL 				            | Url for Rollbar web service (required by Logger).																| https://api.rollbar.com/api/1/item/
-SERVER_API_ROOT                         |
-SERVER_HOST                             |
-SERVER_NAME 				            | Host server name (use 'localhost' for local development).														| localhost
-SERVER_PORT                             | Host server port                                                                                              | 3001
-
+SERVER_API_ROOT                         | Root path for this service.                                                                                   | (typically leave blank)
+SERVER_HOST                             | Host IP for this service.                                                                                     | 127.0.0.1
+SERVER_NAME                             | Server name for this service.                                                                                 | localhost
+SERVER_PORT                             | Port this service listens on.                                                                                 | 8080
+SERVER_URL                              | URL for this service.                                                                                         | http://localhost
+SRX_ENVIRONMENT_URL                     | HostedZone environment URL.                                                                                   | https://example.hostedzone.com/svcs/dev/requestProvider
+SRX_SESSION_TOKEN                       | HostedZone session token assigned to this service.                                                            | (see HostedZone configuration)
+SRX_SHARED_SECRET                       | HostedZone shared secret assigned to this service.                                                            | (see HostedZone configuration)
+SRX_TEST_AMAZON_S3_ACCESS_KEY           | AWS S3 access key for SRX cache for test environment.                                                         | (see Heroku)
+SRX_TEST_AMAZON_S3_BUCKET_NAME          | AWS S3 bucket name for SRX cache for test environment.                                                        | (see Heroku)
+SRX_TEST_AMAZON_S3_PATH                 | Root path to files within SRX cache for test environment.                                                     | (see Heroku)
+SRX_TEST_AMAZON_S3_SECRET               | AWS S3 secret for SRX cache for test environment.                                                             | (see Heroku)
+SRX_TEST_AMAZON_S3_TIMEOUT              | Timeout for AWS S3 connections for test environment.                                                          | 300000
 
 ***
 ## Copyright
