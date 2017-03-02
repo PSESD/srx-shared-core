@@ -78,47 +78,6 @@ class SifConsumerTests extends FunSuite {
     assert(response.body.get.contains("Service[invalid_resource] not found"))
   }
 
-  test("query PRS filters DIRECT to PRS") {
-    if(Environment.isLocal) {
-      // local environment only - PRS environment variables not configured in build environment
-      // also, this test should ultimately fail when PRS whitelist rejects local IPs
-      val provider = new SifProvider(
-        SifProviderUrl(Environment.getProperty("SRX_PRS_DIRECT_URL")),
-        SifProviderSessionToken(Environment.getProperty("SRX_PRS_SESSION_TOKEN")),
-        SifProviderSharedSecret(Environment.getProperty("SRX_PRS_SHARED_SECRET")),
-        SifAuthenticationMethod.SifHmacSha256)
-      val requestId = "1234"
-      val serviceType = SifServiceType.Object
-      val accept = SifContentType.Xml
-      val generatorId = "5678"
-      val messageId = SifMessageId()
-      val messageType = SifMessageType.Request
-      val requestAction = SifRequestAction.Query
-      val requestType = SifRequestType.Immediate
-
-      val sifRequest = new SifRequest(provider, "filters")
-      sifRequest.requestId = Option(requestId)
-      sifRequest.serviceType = Option(serviceType)
-      sifRequest.accept = Option(accept)
-      sifRequest.generatorId = Option(generatorId)
-      sifRequest.messageId = Option(messageId)
-      sifRequest.messageType = Option(messageType)
-      sifRequest.requestAction = Option(requestAction)
-      sifRequest.requestType = Option(requestType)
-
-      // add custom headers specific to the PRS filters endpoint
-      sifRequest.addHeader("objectType", "xSre")
-      sifRequest.addHeader("externalServiceId", "1")
-      sifRequest.addHeader("districtStudentId", "1")
-      sifRequest.addHeader("authorizedEntityId", "1")
-
-      val response = SifConsumer().query(sifRequest)
-      assert(response.statusCode.equals(SifHttpStatusCode.Ok))
-      assert(response.responseAction.orNull.equals(SifRequestAction.Query))
-      assert(response.body.orNull.length > 0)
-    }
-  }
-
   ignore("query PRS filters") {
     val requestId = "1234"
     val serviceType = SifServiceType.Object

@@ -18,4 +18,5 @@ object SrxResourceType extends ExtendedEnumeration {
   val SrxMessages = Value("srxMessages")
   val SrxZoneConfig = Value("srxZoneConfig")
   val Xsres = Value("xSres")
+  val XsresRefresh = Value("xSresRefresh")
 }
